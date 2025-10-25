@@ -1,0 +1,117 @@
+[project]
+name = "yamlagent"
+version = "0.1.0"
+description = "A modern Python CLI application"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Sofiane Djerbi", email = "sofiane.djerbi38@gmail.com" }
+]
+keywords = ["AI", "DevOps", "declarative", "Pipeline", "Workflow"]
+requires-python = ">=3.11"
+dependencies = [
+    "typer>=0.12.0",
+    "rich>=13.0.0",
+    "yamlagent-core",
+    "yamlagent-utils",
+]
+
+[project.urls]
+Homepage = "https://github.com/sofianedjerbi/yamlagent"
+Repository = "https://github.com/sofianedjerbi/yamlagent"
+Issues = "https://github.com/sofianedjerbi/yamlagent/issues"
+
+[project.scripts]
+yamlagent = "yamlagent:main"
+
+[build-system]
+requires = ["uv_build>=0.9.5,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv.sources]
+yamlagent-core = { workspace = true }
+yamlagent-utils = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.8.0",
+    "pyright>=1.1.390",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# https://docs.astral.sh/ruff/rules/
+select = [
+    "F",      # pyflakes
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "I",      # isort
+    "B",      # bugbear
+    "UP",     # pyupgrade
+    "SIM",    # simplify
+    "C4",     # comprehensions
+    "N",      # naming
+    "ANN",    # annotations
+    "ASYNC",  # async
+    "BLE",    # blind except
+    "A",      # builtins
+    "T10",    # debugger
+    "PIE",    # pie
+    "T20",    # print
+    "PT",     # pytest
+    "Q",      # quotes
+    "RSE",    # raise
+    "ARG",    # unused arguments
+    "PTH",    # pathlib
+    "FLY",    # flynt
+    "PERF",   # performance
+    "FURB",   # refurb
+    "RUF",    # ruff
+    "PGH",    # pygrep
+    "DTZ",    # datetimez
+    "EM",     # errmsg
+    "FA",     # future annotations
+    "ICN",    # import conventions
+    "G",      # logging format
+    "LOG",    # logging
+    "INP",    # no pep420
+    "TID",    # tidy imports
+    "ERA",    # eradicate
+    "PLC",    # pylint convention
+    "PLE",    # pylint error
+    "PLW",    # pylint warning
+]
+
+ignore = [
+    "COM812",   # trailing comma missing
+    "COM819",   # trailing comma prohibited
+    "ISC001",   # implicit string concatenation
+    "D203",     # blank line before class docstring
+    "D213",     # multi-line summary second line
+    "C901",     # too complex
+    "PLR0911",  # too many return statements
+    "PLR0912",  # too many branches
+    "PLR0913",  # too many arguments
+    "PLR0915",  # too many statements
+    "PLR2004",  # magic value comparison
+    "RET505",   # unnecessary else after return
+    "FBT001",   # boolean positional arg
+    "FBT002",   # boolean default arg
+    "SLF001",   # private member access
+    "SIM300",   # yoda conditions
+    "C408",     # unnecessary dict call
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]                 # unused imports (re-exports)
+"tests/**/*.py" = ["ANN", "T20", "ARG"]  # no type hints, allow print, allow unused args
+
+[tool.pyright]
+typeCheckingMode = "strict"
