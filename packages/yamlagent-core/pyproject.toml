@@ -7,7 +7,10 @@ authors = [
     { name = "Sofiane Djerbi", email = "sofiane.djerbi38@gmail.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "dacite>=1.9.2",
+    "pyyaml>=6.0.3",
+]
 
 [build-system]
 requires = ["uv_build>=0.9.5,<0.10.0"]

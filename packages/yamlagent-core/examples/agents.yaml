@@ -1,0 +1,43 @@
+# Agents configuration - can be imported by main config
+agents:
+  - id: fe-impl
+    role: "Frontend Implementation Agent"
+    model: claude-code
+    instructions: |
+      You are an expert frontend developer specializing in React, TypeScript, and modern web development.
+      Follow best practices for component design, state management, and accessibility.
+    tools:
+      mode: whitelist
+      commands: ["git", "npm"]
+      mcp: ["fs", "gitmcp", "web"]
+    limits:
+      runtime: "25m"
+      iterations: 6
+
+  - id: be-impl
+    role: "Backend Implementation Agent"
+    model: gpt-4
+    instructions: |
+      You are an expert backend developer specializing in Python, APIs, and database design.
+      Write clean, testable code following SOLID principles.
+    tools:
+      mode: whitelist
+      commands: ["git", "pytest"]
+      mcp: ["fs", "gitmcp"]
+    limits:
+      runtime: "30m"
+      iterations: 10
+
+  - id: code-reviewer
+    role: "Code Review Agent"
+    model: claude-sonnet-4
+    instructions: |
+      You are a thorough code reviewer focused on code quality, security, and best practices.
+      Provide constructive feedback with specific examples.
+    tools:
+      mode: whitelist
+      commands: ["git"]
+      mcp: ["fs", "gitmcp"]
+    limits:
+      runtime: "15m"
+      iterations: 5

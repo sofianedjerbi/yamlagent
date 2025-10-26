@@ -1,0 +1,33 @@
+# Tools configuration - can be imported by main config
+tools:
+  commands:
+    - id: git
+      bin: git
+      args_allow: ["clone", "push", "pull", "status", "diff"]
+      timeout: "5m"
+
+    - id: npm
+      bin: npm
+      args_allow: ["install", "ci", "run", "test"]
+      timeout: "20m"
+
+    - id: pytest
+      bin: pytest
+      args_allow: ["-v", "-x", "--tb=short"]
+      timeout: "10m"
+
+  mcp:
+    - id: fs
+      transport: stdio
+      command: ["node", "mcp/fs-server.js"]
+      calls: ["fs.read", "fs.write", "fs.list"]
+
+    - id: gitmcp
+      transport: stdio
+      command: ["node", "mcp/git-server.js"]
+      calls: ["git.status", "git.diff", "git.log"]
+
+    - id: web
+      transport: stdio
+      command: ["node", "mcp/web-server.js"]
+      calls: ["http.get", "http.post"]

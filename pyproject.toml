@@ -90,17 +90,24 @@ select = [
 ]
 
 ignore = [
+    # Formatter conflicts
     "COM812",   # trailing comma missing
     "COM819",   # trailing comma prohibited
     "ISC001",   # implicit string concatenation
+
+    # Docstring style
     "D203",     # blank line before class docstring
     "D213",     # multi-line summary second line
+
+    # Too strict
     "C901",     # too complex
     "PLR0911",  # too many return statements
     "PLR0912",  # too many branches
     "PLR0913",  # too many arguments
     "PLR0915",  # too many statements
     "PLR2004",  # magic value comparison
+
+    # Opinionated
     "RET505",   # unnecessary else after return
     "FBT001",   # boolean positional arg
     "FBT002",   # boolean default arg
