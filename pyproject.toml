@@ -1,7 +1,7 @@
 [project]
-name = "yamlagent"
+name = "playfile"
 version = "0.1.0"
-description = "A modern Python CLI application"
+description = "AI-powered development workflows defined in YAML"
 readme = "README.md"
 license = "MIT"
 authors = [
@@ -12,28 +12,27 @@ requires-python = ">=3.11"
 dependencies = [
     "typer>=0.12.0",
     "rich>=13.0.0",
-    "yamlagent-core",
-    "yamlagent-utils",
+    "playfile-core",
+    "playfile-utils",
+    "playfile-cli",
+    "rich-click>=1.9.4",
 ]
 
 [project.urls]
-Homepage = "https://github.com/sofianedjerbi/yamlagent"
-Repository = "https://github.com/sofianedjerbi/yamlagent"
-Issues = "https://github.com/sofianedjerbi/yamlagent/issues"
+Homepage = "https://github.com/sofianedjerbi/playfile"
+Repository = "https://github.com/sofianedjerbi/playfile"
+Issues = "https://github.com/sofianedjerbi/playfile/issues"
 
 [project.scripts]
-yamlagent = "yamlagent:main"
-
-[build-system]
-requires = ["uv_build>=0.9.5,<0.10.0"]
-build-backend = "uv_build"
+pf = "playfile_cli.main:cli"
 
 [tool.uv.workspace]
 members = ["packages/*"]
 
 [tool.uv.sources]
-yamlagent-core = { workspace = true }
-yamlagent-utils = { workspace = true }
+playfile-core = { workspace = true }
+playfile-utils = { workspace = true }
+playfile-cli = { workspace = true }
 
 [dependency-groups]
 dev = [

@@ -1,0 +1,56 @@
+# Agent definitions - AI agents with specific roles and capabilities
+agents:
+  - id: coder
+    role: "Software Developer"
+    model: claude-sonnet-4-20250514
+    instructions: .play/agents/coder.md
+    tools:
+      mode: blacklist
+      commands: []  # Has access to all tools except blacklisted ones
+    limits:
+      runtime: "10m"
+      iterations: 30
+
+  - id: reviewer
+    role: "Code Reviewer"
+    model: claude-sonnet-4-20250514
+    instructions: .play/agents/reviewer.md
+    tools:
+      mode: whitelist
+      commands: ["git", "python", "pytest", "node", "npm", "cat", "ls", "ruff", "npx"]
+    limits:
+      runtime: "5m"
+      iterations: 20
+
+  - id: documenter
+    role: "Documentation Writer"
+    model: claude-sonnet-4-20250514
+    instructions: .play/agents/documenter.md
+    tools:
+      mode: whitelist
+      commands: ["cat", "ls", "git"]
+    limits:
+      runtime: "5m"
+      iterations: 15
+
+  - id: test-writer
+    role: "Test Engineer"
+    model: claude-sonnet-4-20250514
+    instructions: .play/agents/test-writer.md
+    tools:
+      mode: whitelist
+      commands: ["python", "pytest", "node", "npm", "cat", "ls", "ruff", "npx"]
+    limits:
+      runtime: "8m"
+      iterations: 25
+
+  - id: monorepo-navigator
+    role: "Monorepo Navigation Expert"
+    model: claude-sonnet-4-20250514
+    instructions: .play/agents/monorepo-navigator.md
+    tools:
+      mode: whitelist
+      commands: ["cat", "ls", "git", "python", "ruff"]
+    limits:
+      runtime: "5m"
+      iterations: 25

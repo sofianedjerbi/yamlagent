@@ -1,0 +1,77 @@
+version: 1
+
+# Import shared configuration from .play/ directory
+imports:
+  - .play/tools.yaml
+  - .play/agents.yaml
+
+# Define workflow tasks - add your own tasks here
+tasks:
+  - id: code
+    description: "Write or modify code based on requirements"
+    working_dir: "."
+    steps:
+      - agent:
+          use: coder
+          with:
+            prompt: "{{ inputs.prompt }}"
+
+  - id: review
+    description: "Review code for quality, bugs, and improvements"
+    working_dir: "."
+    files:
+      read:
+        - "**/*.py"
+        - "**/*.js"
+        - "**/*.ts"
+    steps:
+      - agent:
+          use: reviewer
+          with:
+            prompt: "{{ inputs.prompt }}"
+
+  - id: refactor
+    description: "Refactor existing code following best practices"
+    working_dir: "."
+    files:
+      read:
+        - "**/*.py"
+        - "**/*.js"
+        - "**/*.ts"
+    steps:
+      - agent:
+          use: coder
+          with:
+            prompt: "Refactor the code: {{ inputs.prompt }}"
+      - agent:
+          use: reviewer
+          with:
+            prompt: "Review the refactored code for improvements and issues"
+
+  - id: document
+    description: "Generate or improve code documentation"
+    working_dir: "."
+    files:
+      read:
+        - "**/*.py"
+        - "**/*.js"
+        - "**/*.ts"
+    steps:
+      - agent:
+          use: documenter
+          with:
+            prompt: "{{ inputs.prompt }}"
+
+  - id: test
+    description: "Write tests for existing code"
+    working_dir: "."
+    files:
+      read:
+        - "**/*.py"
+        - "**/*.js"
+        - "**/*.ts"
+    steps:
+      - agent:
+          use: test-writer
+          with:
+            prompt: "{{ inputs.prompt }}"
