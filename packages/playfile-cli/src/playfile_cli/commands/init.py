@@ -24,43 +24,43 @@ from playfile_cli.templates import TemplateManager
     is_flag=True,
     help="Overwrite existing files",
 )
-def init(path: Path, force: bool) -> None:
-    """Initialize a new Playfile project with default configuration
+@click.option(
+    "--intelligent",
+    is_flag=True,
+    help="Customize configuration with AI for existing project",
+)
+def init(path: Path, force: bool, intelligent: bool) -> None:
+    """Initialize Playfile in an existing project
 
-    Creates a playfile.yaml entry file and .play/ directory with:
-    - agents.yaml: Agent definitions with roles and capabilities
-    - tools.yaml: Available tools and commands
-    - agents/: Directory with instruction markdown files
-
-    The default setup includes general coding tools and agents for:
-    - Writing code
-    - Reviewing code
-    - Documenting code
-    - Writing tests
+    Creates playfile.yaml and .play/ directory with configuration
+    for agents, tools, and tasks. Use --intelligent to auto-detect
+    project settings and customize the configuration.
 
     \b
     Examples:
-      pf init              # Initialize in current directory
-      pf init --path ./my-project
-      pf init --force      # Overwrite existing files
+      pf init                      # Initialize with default templates
+      pf init --path ./my-project  # Initialize in specific directory
+      pf init --intelligent        # Auto-detect and customize for project
+      pf init --force              # Overwrite existing files
+
+    \b
+    To create a new project from scratch, use:
+      pf setup "Your project description"
     """
     console = Console()
 
     try:
-        # Resolve target directory
         target_dir = path.resolve()
 
-        # Show what we're about to do
         console.print()
         console.print(
             Panel(
-                f"[bold]Initializing Playfile project in:[/bold]\n{target_dir}",
+                f"[bold]Initializing Playfile in:[/bold]\n{target_dir}",
                 border_style="cyan",
             )
         )
         console.print()
 
-        # Initialize project
         manager = TemplateManager()
         created, skipped = manager.initialize_project(target_dir, overwrite=force)
 
@@ -102,20 +102,37 @@ def init(path: Path, force: bool) -> None:
                     "[dim]Tip: Use --force to overwrite existing files[/dim]\n"
                 )
 
+        # Run intelligent customization if requested
+        if intelligent and created:
+            console.print()
+            console.print("[bold cyan]🤖 Customizing playfile configuration...[/bold cyan]")
+            console.print()
+
+            try:
+                from playfile_cli.intelligent_init import customize_for_project
+
+                customize_for_project(target_dir, console)
+
+            except ImportError as e:
+                console.print(f"[bold yellow]⚠ Customization unavailable:[/bold yellow] {e}")
+                console.print("[dim]Install required dependencies or customize manually.[/dim]")
+            except Exception as e:
+                console.print(f"[bold yellow]⚠ Customization failed:[/bold yellow] {e}")
+                console.print("[dim]Files created but not customized.[/dim]")
+
         # Success message with next steps
         if created:
             console.print("[bold green]✓ Project initialized successfully![/bold green]")
             console.print()
-            console.print("[bold]Next steps:[/bold]")
-            console.print("  1. Review and customize [cyan]playfile.yaml[/cyan]")
-            console.print("  2. Edit agent instructions in [cyan].play/agents/[/cyan]")
-            console.print("  3. Configure tools in [cyan].play/tools.yaml[/cyan]")
-            console.print()
+            if not intelligent:
+                console.print("[bold]Next steps:[/bold]")
+                console.print("  1. Review and customize [cyan]playfile.yaml[/cyan]")
+                console.print("  2. Edit agent instructions in [cyan].play/agents/[/cyan]")
+                console.print("  3. Configure tools in [cyan].play/tools.yaml[/cyan]")
+                console.print()
             console.print("[bold]Try it out:[/bold]")
             console.print("  [cyan]pf list[/cyan]                    # List available tasks")
-            console.print(
-                "  [cyan]pf run code --prompt \"...\"[/cyan]  # Run a task"
-            )
+            console.print("  [cyan]pf run code --prompt \"...\"[/cyan]  # Run a task")
             console.print()
         else:
             console.print(
