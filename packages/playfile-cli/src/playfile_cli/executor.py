@@ -44,6 +44,7 @@ class AgentExecutor:
         prompt: str,
         working_dir: str = ".",
         files: list[str] | None = None,
+        request_summary: bool = False,
     ) -> str | None:
         """Execute an agent with a prompt and optional file context.
 
@@ -52,9 +53,10 @@ class AgentExecutor:
             prompt: Prompt text
             working_dir: Working directory for execution
             files: List of file paths to include in context (optional)
+            request_summary: Whether to request a summary after execution
 
         Returns:
-            Agent response text
+            Agent response text (or summary if request_summary=True)
         """
         # Build Claude SDK options
         options = SdkOptionsBuilder.build_options(agent, working_dir, files)
@@ -71,6 +73,10 @@ class AgentExecutor:
             async for message in client.receive_messages():
                 # Handle AssistantMessage with proper type checking
                 if isinstance(message, AssistantMessage):
+                    # Update context usage if available
+                    if hasattr(message, 'usage') and message.usage:
+                        self._context_indicator.update_usage(message.usage)
+
                     for block in message.content:
                         if isinstance(block, TextBlock):
                             # Show context indicator before text
@@ -109,4 +115,41 @@ class AgentExecutor:
 
             # Print newline at the end
             self._console.print()
+
+            # Request summary if needed
+            if request_summary and response_text:
+                self._console.print("\n[dim]Requesting summary from agent...[/dim]")
+                summary = await self._request_summary(client, agent)
+                return summary
+
             return response_text
+
+    async def _request_summary(self, client: ClaudeSDKClient, agent: Agent) -> str:
+        """Request a summary from the agent after task completion.
+
+        Args:
+            client: Active Claude SDK client
+            agent: Agent that performed the work
+
+        Returns:
+            Summary text
+        """
+        summary_prompt = (
+            "Create a concise summary (2-4 sentences) of the work you just completed. "
+            "Include: what was done, key decisions made, and any important context "
+            "for the next agent. Be specific and factual."
+        )
+
+        await client.query(summary_prompt)
+
+        summary_text = ""
+        async for message in client.receive_messages():
+            if isinstance(message, AssistantMessage):
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        summary_text += block.text
+            elif isinstance(message, ResultMessage):
+                break
+
+        self._console.print(f"[dim]Summary: {summary_text[:150]}...[/dim]\n")
+        return summary_text
