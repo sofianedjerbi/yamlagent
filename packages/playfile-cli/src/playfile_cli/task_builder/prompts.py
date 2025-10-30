@@ -43,7 +43,7 @@ Design the sequence of agents to accomplish the task:
 - Example: "Write code" → just use coder agent
 
 **Multi-step workflows**: Complex tasks needing multiple agents
-- Example: "Build and test" → coder writes code, test-writer adds tests
+- Example: "Build and test" → coder writes code, tester adds tests
 - Example: "Review and fix" → reviewer finds issues, coder fixes them
 
 **Agent Selection**:
