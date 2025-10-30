@@ -27,7 +27,7 @@ class ContextIndicator:
         """Get a compact context indicator string.
 
         Returns:
-            Formatted string like "[92%]" with color coding
+            Formatted string like "[8%]" showing context usage (0% = free, 100% = full)
         """
         if not self._last_usage:
             return ""
@@ -35,19 +35,18 @@ class ContextIndicator:
         # Get input tokens from usage
         input_tokens = self._last_usage.get("input_tokens", 0)
 
-        # Calculate percentage used
+        # Calculate percentage used (0% = all free, 100% = all used)
         pct_used = (input_tokens / self._max_tokens) * 100
-        pct_left = 100 - pct_used
 
-        # Color code based on remaining context
-        if pct_left > 50:
+        # Color code based on context usage
+        if pct_used < 50:
             color = "green"
-        elif pct_left > 25:
+        elif pct_used < 75:
             color = "yellow"
-        elif pct_left > 10:
+        elif pct_used < 90:
             color = "red"
         else:
             color = "red bold"
 
-        # Format: [92%] - percentage remaining
-        return f"[{color}][{pct_left:.0f}%][/{color}]"
+        # Format: [8%] - percentage of context used
+        return f"[{color}][{pct_used:.0f}%][/{color}]"
