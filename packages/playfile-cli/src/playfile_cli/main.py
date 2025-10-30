@@ -2,7 +2,7 @@
 
 import rich_click as click
 
-from playfile_cli.commands import create, init, run
+from playfile_cli.commands import create, init, run, setup
 from playfile_cli.commands.list import list_cmd
 
 # Configure rich-click for clean, simple output
@@ -19,7 +19,7 @@ click.rich_click.COMMAND_GROUPS = {
     "pf": [
         {
             "name": "Commands",
-            "commands": ["init", "create", "run", "list"],
+            "commands": ["setup", "init", "create", "run", "list"],
         },
     ]
 }
@@ -44,6 +44,7 @@ def cli() -> None:
 
 
 # Register commands
+cli.add_command(setup)
 cli.add_command(init)
 cli.add_command(create)
 cli.add_command(run)
