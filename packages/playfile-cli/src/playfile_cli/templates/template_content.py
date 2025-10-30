@@ -458,33 +458,31 @@ def test_descriptive_name():
 - **10-20 lines per test** maximum
 """
 
-PROJECT_MD = """# Project Overview
+PROJECT_OVERVIEW = """# Project Overview
 
-This is a placeholder project overview. Run `pf init --intelligent` to generate a comprehensive project overview automatically.
+Brief 2-3 sentence description of what this project does and its primary purpose.
 
-## Purpose
+Run `pf init --intelligent` to auto-generate this based on your codebase.
+"""
 
-Describe what this project does in 2-3 sentences.
+PROJECT_GUIDELINES = """# Project Guidelines
 
-## Architecture
+Best practices, conventions, and patterns for this project.
 
-Key directories and their purposes:
-- `src/` - Source code
-- `tests/` - Test files
-- `docs/` - Documentation
+## Code Organization
 
-## Core Concepts
+- Standard directory structure and module organization
+- Where different types of code belong
 
-Main abstractions, patterns, and conventions:
-- List key patterns used
-- Naming conventions
-- Code organization principles
+## Naming Conventions
 
-## Tech Stack
+- How to name files, classes, functions, variables
+- Consistent naming patterns across the codebase
 
-- **Language**: (e.g., Python, TypeScript, Rust)
-- **Framework**: (if applicable)
-- **Key Dependencies**: (list major libraries)
+## Architecture Patterns
+
+- Key abstractions and design patterns used
+- How components interact with each other
 
 ## Development Workflow
 
@@ -499,9 +497,18 @@ Main abstractions, patterns, and conventions:
 # (command here)
 ```
 
-## Notes for AI Agents
+## Best Practices
 
-- Follow existing code patterns in the codebase
-- Check related files before making changes
-- Maintain consistency with current architecture
+- Code quality standards
+- Testing requirements
+- Documentation expectations
+
+## For AI Agents
+
+- Always explore existing code before adding new files
+- Follow established patterns and conventions
+- Reuse existing utilities and abstractions
+- Match the project's coding style
+
+Run `pf init --intelligent` to auto-generate detailed guidelines for your project.
 """

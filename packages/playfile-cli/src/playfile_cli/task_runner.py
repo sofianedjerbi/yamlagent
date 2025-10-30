@@ -374,7 +374,7 @@ class TaskRunner:
         return files if files else None
 
     def _get_project_context(self, working_dir: str) -> str | None:
-        """Get project overview context from .play/project.md if available.
+        """Get project context from .play/project/ files if available.
 
         Args:
             working_dir: Working directory
@@ -384,14 +384,30 @@ class TaskRunner:
         """
         from pathlib import Path
 
-        project_md = Path(working_dir) / ".play" / "project.md"
+        project_dir = Path(working_dir) / ".play" / "project"
+        overview_file = project_dir / "overview.md"
+        guidelines_file = project_dir / "guidelines.md"
 
-        if project_md.exists():
+        context_parts = []
+
+        # Read overview (short project purpose)
+        if overview_file.exists():
             try:
-                content = project_md.read_text()
-                return f"# PROJECT OVERVIEW\n\n{content}"
+                content = overview_file.read_text()
+                context_parts.append(f"# PROJECT OVERVIEW\n\n{content}")
             except Exception:
-                return None
+                pass
+
+        # Read guidelines (best practices and conventions)
+        if guidelines_file.exists():
+            try:
+                content = guidelines_file.read_text()
+                context_parts.append(f"# PROJECT GUIDELINES\n\n{content}")
+            except Exception:
+                pass
+
+        if context_parts:
+            return "\n\n".join(context_parts)
 
         return None
 

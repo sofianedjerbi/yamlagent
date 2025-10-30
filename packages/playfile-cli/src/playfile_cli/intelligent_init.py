@@ -79,19 +79,33 @@ async def customize_for_project_async(project_dir: Path, console: Console) -> No
 async def _generate_project_md(
     project_dir: Path, context: dict, console: Console
 ) -> None:
-    """Generate .play/project.md with project overview for agent context.
+    """Generate project context files for agent awareness.
 
     Args:
         project_dir: Project directory
         context: Project context from analysis
         console: Rich console for output
     """
-    console.print("[dim]Generating project overview...[/dim]")
+    console.print("[dim]Generating project context...[/dim]")
 
-    # Build prompt for project.md generation
+    # Build prompt for overview generation
     files_list = "\n".join(f"- {f}" for f in context.get("files", [])[:30])
 
-    prompt = f"""Analyze this project and create a comprehensive project overview document.
+    # Generate overview (very short)
+    overview_prompt = f"""Analyze this project and write a 2-3 sentence overview.
+
+WORKING DIRECTORY: . (current directory)
+
+PROJECT CONTEXT:
+- Type: {context['project_type']}
+- Package manager: {context.get('package_manager', 'unknown')}
+- Files: {', '.join(context.get('files', [])[:10])}
+
+Write ONLY 2-3 sentences describing what this project does and its primary purpose.
+No headers, no markdown formatting, just the sentences."""
+
+    # Generate guidelines (best practices)
+    guidelines_prompt = f"""Analyze this project and document its best practices and conventions.
 
 WORKING DIRECTORY: . (current directory)
 
@@ -104,43 +118,60 @@ PROJECT CONTEXT:
 FILES IN PROJECT:
 {files_list}
 
-Create a project.md file with:
+Create project guidelines covering:
 
-1. **Project Overview**: What this project does (2-3 sentences)
-2. **Architecture**: Key directories and their purposes
-3. **Core Concepts**: Main abstractions, patterns, and conventions used
-4. **Tech Stack**: Languages, frameworks, key dependencies
-5. **Development Workflow**: How to run, test, build
+1. **Code Organization**: Directory structure and where code belongs
+2. **Naming Conventions**: Files, classes, functions, variables
+3. **Architecture Patterns**: Key abstractions and design patterns
+4. **Development Workflow**: Install, test, build commands
+5. **Best Practices**: Code quality, testing, documentation standards
 
-Be concise but comprehensive. Focus on information that helps agents understand:
+Focus on actionable information for AI agents:
 - Where to find existing code
 - What patterns/conventions to follow
-- How components relate to each other
+- How to integrate new code
 
-Output ONLY the markdown content, no code blocks, no preamble.
-"""
+Output ONLY the markdown content, no code blocks wrapper."""
 
     try:
         executor = AgentExecutor(tools=None, console=console)
-        project_md_content = await executor.execute(
+
+        # Generate overview
+        overview_content = await executor.execute(
             agent=CUSTOMIZATION_AGENT,
-            prompt=prompt,
+            prompt=overview_prompt,
             working_dir=str(project_dir),
             files=None,
         )
 
-        if project_md_content:
-            # Write to .play/project.md
-            play_dir = project_dir / ".play"
-            play_dir.mkdir(exist_ok=True)
-            project_md_path = play_dir / "project.md"
-            project_md_path.write_text(project_md_content.strip())
+        # Generate guidelines
+        console.print("[dim]Generating project guidelines...[/dim]")
+        guidelines_content = await executor.execute(
+            agent=CUSTOMIZATION_AGENT,
+            prompt=guidelines_prompt,
+            working_dir=str(project_dir),
+            files=None,
+        )
+
+        # Write files
+        project_ctx_dir = project_dir / ".play" / "project"
+        project_ctx_dir.mkdir(parents=True, exist_ok=True)
+
+        if overview_content:
+            overview_file = project_ctx_dir / "overview.md"
+            overview_file.write_text(f"# Project Overview\n\n{overview_content.strip()}")
             console.print("[green]✓ Generated project overview[/green]")
-        else:
-            console.print("[yellow]⚠ Could not generate project overview[/yellow]")
+
+        if guidelines_content:
+            guidelines_file = project_ctx_dir / "guidelines.md"
+            guidelines_file.write_text(guidelines_content.strip())
+            console.print("[green]✓ Generated project guidelines[/green]")
+
+        if not overview_content and not guidelines_content:
+            console.print("[yellow]⚠ Could not generate project context[/yellow]")
 
     except Exception as e:
-        console.print(f"[yellow]⚠ Failed to generate project overview: {e}[/yellow]")
+        console.print(f"[yellow]⚠ Failed to generate project context: {e}[/yellow]")
 
 
 async def _query_claude_for_customization(
