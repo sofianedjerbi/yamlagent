@@ -15,16 +15,10 @@ CUSTOMIZATION_AGENT = Agent(
     id="playfile-customizer",
     role="Playfile Configuration Specialist",
     model="claude-sonnet-4-5-20250929",
-    instructions="""You are a technical writer specializing in project documentation.
+    instructions="""You specialize in project documentation and configuration.
 
-CRITICAL: Output ONLY the requested content. NO explanations, NO thinking process, NO preamble.
-
-When asked to write documentation:
-- Write directly in the requested format
-- Do NOT include "I'll analyze..." or "Let me..."
-- Do NOT wrap in markdown code blocks
-- Start immediately with the actual content""",
-    tools=AgentToolsConfig(mode=ToolsMode.BLACKLIST, commands=[]),
+Use the Write tool to create files directly. Do not output content in chat.""",
+    tools=AgentToolsConfig(mode=ToolsMode.WHITELIST, commands=["Write", "Read", "Glob"]),
     limits=AgentLimits(runtime="5m", iterations=20),
 )
 
@@ -96,25 +90,10 @@ async def _generate_project_md(
     """
     console.print("[dim]Generating project context...[/dim]")
 
-    # Build prompt for overview generation
+    # Build prompt for file generation
     files_list = "\n".join(f"- {f}" for f in context.get("files", [])[:30])
 
-    # Generate overview (very short)
-    overview_prompt = f"""Write a 2-3 sentence project overview based on this context:
-
-PROJECT CONTEXT:
-- Type: {context['project_type']}
-- Package manager: {context.get('package_manager', 'unknown')}
-- Files: {', '.join(context.get('files', [])[:10])}
-
-Output format: Just 2-3 sentences describing what this project does.
-Example: "This is a web API built with FastAPI. It provides REST endpoints for
-user management and authentication. The project uses PostgreSQL for data storage."
-
-Write ONLY the sentences. Do NOT include thinking, explanations, or markdown blocks."""
-
-    # Generate guidelines (best practices)
-    guidelines_prompt = f"""Document this project's guidelines in markdown format.
+    prompt = f"""Create project documentation files analyzing this project.
 
 PROJECT CONTEXT:
 - Type: {context['project_type']}
@@ -125,60 +104,42 @@ PROJECT CONTEXT:
 FILES IN PROJECT:
 {files_list}
 
-Create a markdown document with these sections:
+Create these files using the Write tool:
 
-## Code Organization
-(Directory structure and where code belongs)
+1. `.play/project/overview.md`:
+   - Start with "# Project Overview" header
+   - Write 2-3 sentences describing what this project does and its purpose
+   - Keep it brief and high-level
 
-## Naming Conventions
-(Files, classes, functions, variables)
+2. `.play/project/guidelines.md`:
+   - Start with "# Project Guidelines" header
+   - Include sections: Code Organization, Naming Conventions, Architecture Patterns,
+     Development Workflow, Best Practices
+   - Focus on actionable information for developers and AI agents
+   - Document actual patterns found in the codebase
 
-## Architecture Patterns
-(Key abstractions and design patterns used)
-
-## Development Workflow
-(Install, test, build commands)
-
-## Best Practices
-(Code quality, testing, documentation)
-
-Write ONLY the markdown document. Do NOT include thinking or code block wrappers."""
+Use the Write tool to create both files."""
 
     try:
         executor = AgentExecutor(tools=None, console=console)
-
-        # Generate overview
-        overview_content = await executor.execute(
+        await executor.execute(
             agent=CUSTOMIZATION_AGENT,
-            prompt=overview_prompt,
+            prompt=prompt,
             working_dir=str(project_dir),
             files=None,
         )
 
-        # Generate guidelines
-        console.print("[dim]Generating project guidelines...[/dim]")
-        guidelines_content = await executor.execute(
-            agent=CUSTOMIZATION_AGENT,
-            prompt=guidelines_prompt,
-            working_dir=str(project_dir),
-            files=None,
-        )
-
-        # Write files
+        # Verify files were created
         project_ctx_dir = project_dir / ".play" / "project"
-        project_ctx_dir.mkdir(parents=True, exist_ok=True)
+        overview_file = project_ctx_dir / "overview.md"
+        guidelines_file = project_ctx_dir / "guidelines.md"
 
-        if overview_content:
-            overview_file = project_ctx_dir / "overview.md"
-            overview_file.write_text(f"# Project Overview\n\n{overview_content.strip()}")
+        if overview_file.exists():
             console.print("[green]✓ Generated project overview[/green]")
-
-        if guidelines_content:
-            guidelines_file = project_ctx_dir / "guidelines.md"
-            guidelines_file.write_text(guidelines_content.strip())
+        if guidelines_file.exists():
             console.print("[green]✓ Generated project guidelines[/green]")
 
-        if not overview_content and not guidelines_content:
+        if not overview_file.exists() and not guidelines_file.exists():
             console.print("[yellow]⚠ Could not generate project context[/yellow]")
 
     except Exception as e:
