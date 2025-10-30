@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from claude_agent_sdk import ClaudeAgentOptions
+from claude_agent_sdk import ClaudeAgentOptions, PermissionResultAllow, PermissionResultDeny
 from playfile_core.agents.agent import Agent
 
 
@@ -33,13 +33,58 @@ class SdkOptionsBuilder:
         # Build allowed tools list
         allowed_tools = SdkOptionsBuilder._build_allowed_tools(agent)
 
+        # Ensure working_dir is absolute and normalized
+        abs_working_dir = str(Path(working_dir).resolve())
+
+        # Create path validator to prevent access outside working directory
+        async def validate_path_access(
+            tool_name: str, params: dict, context: any
+        ) -> PermissionResultAllow | PermissionResultDeny:
+            """Validate that file operations stay within working directory."""
+            # Check if this is a file operation tool
+            if tool_name in ["Write", "Edit", "Read", "Bash"]:
+                # Extract file path from params
+                file_path = params.get("file_path") or params.get("path")
+
+                if file_path:
+                    try:
+                        # Resolve the path to absolute
+                        abs_file_path = Path(abs_working_dir) / file_path
+                        resolved_path = abs_file_path.resolve()
+
+                        # Check if resolved path is within working directory
+                        working_path = Path(abs_working_dir).resolve()
+
+                        # Use is_relative_to if available (Python 3.9+), otherwise compare parts
+                        try:
+                            if not resolved_path.is_relative_to(working_path):
+                                return PermissionResultDeny(
+                                    reason=f"Access denied: {file_path} outside working directory"
+                                )
+                        except AttributeError:
+                            # Fallback for Python < 3.9
+                            try:
+                                resolved_path.relative_to(working_path)
+                            except ValueError:
+                                return PermissionResultDeny(
+                                    reason=f"Access denied: {file_path} outside working directory"
+                                )
+                    except Exception:
+                        # If we can't validate the path, deny access
+                        return PermissionResultDeny(
+                            reason=f"Access denied: Invalid path {file_path}"
+                        )
+
+            # Allow the operation
+            return PermissionResultAllow()
+
         # Build options dict
         options_dict = {
             "model": agent.model,
             "system_prompt": system_prompt,
-            "cwd": working_dir,
-            # Allow agents to create/edit files without prompts
-            "permission_mode": "bypassPermissions",
+            "cwd": abs_working_dir,
+            # Use custom permission handler instead of bypass
+            "can_use_tool": validate_path_access,
             "include_partial_messages": True,  # Enable finer-grained streaming
         }
 
