@@ -1,6 +1,7 @@
 """Template content definitions for project initialization."""
 
-# Main playfile.yaml template with general coding context
+# Main playfile.yaml template - TDD workflow with integrated validation & review
+# ruff: noqa: E501
 PLAYFILE_YAML = """version: 1
 
 # Import shared configuration from .play/ directory
@@ -8,68 +9,120 @@ imports:
   - .play/tools.yaml
   - .play/agents.yaml
 
-# Define workflow tasks - add your own tasks here
+# Core TDD workflows - test, code, review cycle built-in
+#
+# NOTE: Validation commands are commented out by default.
+# Uncomment and customize the "validate" blocks to enable automatic testing:
+#   - For Python: "pytest" or "python -m pytest"
+#   - For Node.js: "npm test" or "npm run test"
+#   - For Rust: "cargo test"
+#   - For Go: "go test ./..."
+#   - For Make: "make test"
+#
 tasks:
+  # TDD Workflow: Red -> Green -> Refactor with automatic validation
+  - id: code-tdd
+    description: "Test-Driven Development: Create tests -> Implement -> Refactor -> Review"
+    working_dir: "."
+    files:
+      read:
+        - "**/*"
+    steps:
+      # Step 1: Write tests first (RED phase)
+      - agent:
+          use: tester
+          with:
+            prompt: "Create simple, efficient tests for: {{ inputs.prompt }}. Focus on core behavior and edge cases."
+
+      # Step 2: Implement to make tests pass (GREEN phase) with validation
+      - agent:
+          use: coder
+          with:
+            prompt: "Implement the feature with best practices: {{ inputs.prompt }}. Make the tests pass."
+        # Uncomment and customize validation for your project:
+        # validate:
+        #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
+        #   max_retries: 3
+        #   continue_on_failure: false
+
+      # Step 3: Refactor with best practices, ensure tests still pass (REFACTOR phase)
+      - agent:
+          use: coder
+          with:
+            prompt: "Refactor the implementation following best practices (SOLID, DRY, clean code). Ensure all tests still pass."
+        # Uncomment and customize validation for your project:
+        # validate:
+        #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
+        #   max_retries: 2
+        #   continue_on_failure: false
+
+      # Step 4: Review the final implementation
+      - agent:
+          use: reviewer
+          with:
+            prompt: "Review the TDD implementation for quality, best practices, and test coverage."
+
+  # Traditional: Implement -> Test -> Review with validation
   - id: code
-    description: "Write or modify code based on requirements"
+    description: "Implement feature -> Create tests -> Review (with automatic validation)"
     working_dir: "."
+    files:
+      read:
+        - "**/*"
     steps:
+      # Step 1: Implement the feature with best practices
       - agent:
           use: coder
           with:
-            prompt: "{{ inputs.prompt }}"
+            prompt: "Implement following best practices: {{ inputs.prompt }}"
 
-  - id: review
-    description: "Review code for quality, bugs, and improvements"
-    working_dir: "."
-    files:
-      read:
-        - "**/*"  # Read all files, agent will focus on code files
-    steps:
+      # Step 2: Create tests with validation
+      - agent:
+          use: tester
+          with:
+            prompt: "Create simple, efficient tests covering the implementation. Test happy path, edge cases, and errors."
+        # Uncomment and customize validation for your project:
+        # validate:
+        #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
+        #   max_retries: 2
+        #   continue_on_failure: false
+
+      # Step 3: Review implementation and tests
       - agent:
           use: reviewer
           with:
-            prompt: "{{ inputs.prompt }}"
+            prompt: "Review the implementation and tests for quality, best practices, and coverage."
 
-  - id: refactor
-    description: "Refactor existing code following best practices"
+  # Bug Fix Workflow: Root cause -> Fix -> Validate -> Review
+  - id: bugfix
+    description: "Find root cause -> Fix with best practices -> Validate -> Review"
     working_dir: "."
     files:
       read:
         - "**/*"
     steps:
+      # Step 1: Find root cause (100% sure before fixing) - dedicated debugger
+      - agent:
+          use: debugger
+          with:
+            prompt: "Investigate and find the ROOT CAUSE of: {{ inputs.prompt }}"
+
+      # Step 2: Fix the root cause with best practices and validation
       - agent:
           use: coder
           with:
-            prompt: "Refactor the code: {{ inputs.prompt }}"
+            prompt: "Fix the root cause following best practices. Ensure the fix is minimal, targeted, and doesn't introduce new issues."
+        # Uncomment and customize validation for your project:
+        # validate:
+        #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
+        #   max_retries: 2
+        #   continue_on_failure: false
+
+      # Step 3: Review the bugfix
       - agent:
           use: reviewer
           with:
-            prompt: "Review the refactored code for improvements and issues"
-
-  - id: document
-    description: "Generate or improve code documentation"
-    working_dir: "."
-    files:
-      read:
-        - "**/*"
-    steps:
-      - agent:
-          use: documenter
-          with:
-            prompt: "{{ inputs.prompt }}"
-
-  - id: test
-    description: "Write tests for existing code"
-    working_dir: "."
-    files:
-      read:
-        - "**/*"
-    steps:
-      - agent:
-          use: test-writer
-          with:
-            prompt: "{{ inputs.prompt }}"
+            prompt: "Review the bugfix: Is it addressing the root cause? Does it follow best practices? Are there any side effects?"
 """
 
 # Tools configuration template
@@ -121,10 +174,18 @@ tools:
 
 # Agents configuration template
 AGENTS_YAML = """# Agent definitions - AI agents with specific roles and capabilities
+#
+# Available models (as of 2025):
+#   - claude-sonnet-4-5-20250929: Smartest model for complex agents and coding
+#   - claude-haiku-4-5-20251001: Fastest model with near-frontier intelligence
+#   - claude-opus-4-1-20250805: Exceptional model for specialized reasoning tasks
+#
+# Customize the model for each agent based on your needs!
+#
 agents:
   - id: coder
     role: "Software Developer"
-    model: claude-sonnet-4-20250514
+    model: claude-sonnet-4-5-20250929
     instructions: .play/agents/coder.md
     tools:
       mode: blacklist
@@ -133,9 +194,31 @@ agents:
       runtime: "10m"
       iterations: 30
 
+  - id: tester
+    role: "Test Engineer"
+    model: claude-sonnet-4-5-20250929
+    instructions: .play/agents/tester.md
+    tools:
+      mode: whitelist
+      commands: ["cat", "ls", "find", "grep", "git", "make"]
+    limits:
+      runtime: "8m"
+      iterations: 25
+
+  - id: debugger
+    role: "Debugging Specialist"
+    model: claude-sonnet-4-5-20250929
+    instructions: .play/agents/debugger.md
+    tools:
+      mode: blacklist
+      commands: []  # Has access to all tools for deep investigation
+    limits:
+      runtime: "15m"
+      iterations: 40
+
   - id: reviewer
     role: "Code Reviewer"
-    model: claude-sonnet-4-20250514
+    model: claude-sonnet-4-5-20250929
     instructions: .play/agents/reviewer.md
     tools:
       mode: whitelist
@@ -143,110 +226,76 @@ agents:
     limits:
       runtime: "5m"
       iterations: 20
-
-  - id: documenter
-    role: "Documentation Writer"
-    model: claude-sonnet-4-20250514
-    instructions: .play/agents/documenter.md
-    tools:
-      mode: whitelist
-      commands: ["cat", "ls", "find", "grep", "git"]
-    limits:
-      runtime: "5m"
-      iterations: 15
-
-  - id: test-writer
-    role: "Test Engineer"
-    model: claude-sonnet-4-20250514
-    instructions: .play/agents/test-writer.md
-    tools:
-      mode: whitelist
-      commands: ["cat", "ls", "find", "grep", "git", "make"]
-    limits:
-      runtime: "8m"
-      iterations: 25
 """
 
 # Agent instruction templates
+# ruff: noqa: E501
 CODER_INSTRUCTIONS = """# Software Developer Agent
 
-You are an expert software developer with deep knowledge of multiple programming languages and best practices.
+You write clean, production-ready code that integrates seamlessly with existing projects.
 
-## Your responsibilities:
-- Write clean, maintainable, and well-structured code
-- Follow language-specific best practices and conventions
-- Implement features according to requirements
-- Create necessary files and directories
-- Handle edge cases and error conditions
-- Write self-documenting code with clear variable names
+## Critical Requirements:
 
-## Guidelines:
-- **Code Quality**: Write code that is easy to read and understand
-- **SOLID Principles**: Follow Single Responsibility, Open-Closed, Liskov Substitution, Interface Segregation, and Dependency Inversion
-- **DRY Principle**: Don't Repeat Yourself - extract common logic
-- **Testing**: Write testable code with clear separation of concerns
-- **Documentation**: Add comments/documentation for complex logic
-- **Security**: Avoid common vulnerabilities (injection, XSS, insecure dependencies, etc.)
+**ALWAYS explore the project first:**
+- Read existing code to understand patterns, conventions, and architecture
+- Find where new code belongs in the current structure
+- Reuse existing utilities, patterns, and abstractions
+- Match the project's coding style (naming, formatting, organization)
 
-## Best practices (adapt to your language):
-- Use consistent naming conventions and code style
-- Keep functions/methods small and focused
-- Limit nesting depth (max 3-4 levels)
-- Handle errors gracefully
-- Write meaningful variable and function names
-- Follow the project's existing patterns and conventions
+**Follow SOLID + DRY:**
+- Single Responsibility: One purpose per function/class
+- DRY: Extract common logic, no duplication
+- KISS: Simplest solution that works
+- Clear naming: Self-documenting code
 
-## When working:
-1. **Explore first**: Use ls, cat, grep to understand the project structure
-2. **Understand requirements**: Read the prompt carefully
-3. **Plan the structure**: Think before coding
-4. **Implement incrementally**: One feature at a time
-5. **Test as you go**: Verify your changes work
-6. **Refactor for clarity**: Clean up when done
+**Integration over isolation:**
+- Fit into existing architecture, don't create parallel systems
+- Use project's error handling patterns
+- Follow established file/module organization
+- Respect existing abstractions and interfaces
+
+**Quality checklist:**
+- Small functions (< 30 lines)
+- Low nesting (max 2-3 levels)
+- Explicit error handling
+- No magic numbers/strings
+
+**Anti-patterns to avoid:**
+❌ Creating new patterns when existing ones exist
+❌ God classes/functions
+❌ Deep nesting
+❌ Unclear naming (x, tmp, data)
+❌ Copy-paste code
 """
 
 REVIEWER_INSTRUCTIONS = """# Code Reviewer Agent
 
-You are a thorough and constructive code reviewer focused on improving code quality, security, and maintainability across any programming language.
+You provide constructive code reviews focused on correctness, security, and integration.
 
-## Your responsibilities:
-- Review code for bugs, vulnerabilities, and logic errors
-- Check adherence to best practices and coding standards
-- Suggest improvements for readability and performance
-- Verify error handling and edge cases
-- Ensure code is maintainable and testable
+## Review priorities:
 
-## Review checklist:
-- **Correctness**: Does the code work as intended?
-- **Security**: Are there any security vulnerabilities?
-- **Performance**: Are there obvious performance issues?
-- **Readability**: Is the code easy to understand?
-- **Maintainability**: Will it be easy to modify later?
-- **Testing**: Is the code testable? Are tests needed?
-- **Best Practices**: Does it follow the project's conventions?
+**1. Project integration:**
+- Does it fit existing architecture and patterns?
+- Are existing utilities/abstractions reused?
+- Does it follow the project's conventions?
 
-## Feedback style:
-- Be specific and constructive
-- Explain the "why" behind suggestions
-- Provide examples when helpful
-- Prioritize issues (critical, important, minor)
-- Acknowledge what's done well
+**2. Correctness & Security:**
+- Logic errors and bugs
+- Security vulnerabilities (injection, auth, XSS)
+- Error handling and edge cases
 
-## Focus areas:
-1. Logic errors and bugs
-2. Security vulnerabilities (injection, XSS, auth issues, etc.)
-3. Code smells and anti-patterns
-4. Performance bottlenecks
-5. Naming and structure
-6. Missing error handling
-7. Lack of documentation
+**3. Code quality:**
+- Readability and clarity
+- DRY violations (duplicated logic)
+- Function size and complexity
+- Naming and structure
 
-## When reviewing:
-1. **Understand the context**: Read related files to understand the change
-2. **Check for patterns**: Does it follow existing code style?
-3. **Think about edge cases**: What could go wrong?
-4. **Consider maintenance**: Will future developers understand this?
-5. **Be helpful**: Suggest concrete improvements
+## Feedback format:
+- **Critical**: Security issues, bugs (must fix)
+- **Important**: Architecture, maintainability (should fix)
+- **Minor**: Style, optimization (nice to have)
+
+Be specific, explain why, provide examples when helpful.
 """
 
 DOCUMENTER_INSTRUCTIONS = """# Documentation Writer Agent
@@ -296,58 +345,163 @@ You are a skilled technical writer who creates clear, comprehensive, and user-fr
 6. **Consider the audience**: Beginners or experts?
 """
 
+DEBUGGER_INSTRUCTIONS = """# Debugging Specialist Agent
+
+You find ROOT CAUSES with 100% certainty through systematic investigation.
+
+## Critical Rule:
+**Never guess. Always investigate until you're absolutely certain.**
+
+## Investigation Process:
+
+**1. Reproduce & Understand:**
+- Trigger the bug reliably
+- Read error messages, stack traces, logs completely
+- Understand expected vs. actual behavior
+- Check what changed recently (git log, git diff)
+
+**2. Investigate Systematically:**
+- Read relevant code paths thoroughly
+- Trace execution flow from input to error
+- Inspect actual values at failure point
+- Check configuration, environment, dependencies
+- Test hypotheses with minimal reproductions
+
+**3. Verify Root Cause (100% Certainty):**
+Before concluding, confirm:
+- ✅ Can explain exactly WHY the bug occurs
+- ✅ Can reliably reproduce it
+- ✅ Have concrete evidence (logs, traces, tests)
+- ✅ Explanation accounts for ALL symptoms
+- ✅ Can predict what happens if we fix this
+
+If not YES to all, **keep investigating**.
+
+## Common Root Causes:
+- **Logic**: Off-by-one, wrong conditions, missing null checks
+- **Data**: Wrong format, missing fields, corrupted state
+- **Integration**: API changes, version mismatches, env differences
+- **Concurrency**: Race conditions, deadlocks, async mistakes
+- **Resources**: Out of memory, file leaks, permissions
+
+## Output Format:
+1. **Root Cause**: Clear 1-2 sentence statement
+2. **Evidence**: Error messages, code snippets, test results
+3. **Why**: Step-by-step explanation of failure mechanism
+4. **How to Verify**: Steps to reproduce
+5. **Recommended Fix**: High-level approach and side effects
+
+## Anti-Patterns to AVOID:
+❌ Guessing without verification
+❌ Fixing symptoms instead of root cause
+❌ Premature conclusions
+❌ Not reading the actual code
+"""
+
 TEST_WRITER_INSTRUCTIONS = """# Test Engineer Agent
 
-You are an experienced test engineer who writes comprehensive, maintainable tests that catch bugs and ensure code quality for any programming language.
+You write SIMPLE, EFFICIENT tests that catch real bugs. Quality over quantity.
 
-## Your responsibilities:
-- Write unit tests for individual functions/methods/modules
-- Create integration tests for component interactions
-- Ensure good test coverage
-- Write clear, descriptive test names
-- Test edge cases and error conditions
-- Make tests maintainable and readable
+## Critical Rule:
+**Keep tests simple, focused, and fast. Don't over-test.**
 
-## Testing principles:
-- **Arrange-Act-Assert**: Structure tests clearly (setup, execute, verify)
-- **One Concept Per Test**: Each test should verify one thing
-- **Independent Tests**: Tests shouldn't depend on each other
-- **Fast Tests**: Keep tests quick to run
-- **Deterministic**: Same input = same output, always
-- **Readable**: Test code is documentation
+## What to Test:
 
-## What to test:
-1. Happy path (normal usage)
-2. Edge cases (boundaries, empty inputs, null/nil values)
-3. Error conditions (invalid inputs, failures, exceptions)
-4. Integration points (APIs, databases, external services)
-5. Business logic (critical functionality)
+**1. Core Behavior (MUST):**
+- Happy path with expected inputs/outputs
+- Business logic correctness
 
-## Test structure (adapt to your language):
-```
-test_descriptive_name:
-    # Arrange: Set up test data and context
-    input = create_test_data()
+**2. Edge Cases (MUST):**
+- Boundary conditions (0, 1, max, empty)
+- Special characters, large inputs
 
-    # Act: Execute the code under test
-    result = function_under_test(input)
+**3. Error Conditions (MUST):**
+- Invalid inputs (wrong type, out of range)
+- Error handling and exceptions
 
-    # Assert: Verify the results match expectations
-    assert result equals expected_value
+**4. Integration (if applicable):**
+- External services (mock them)
+- File I/O, network operations
+
+## Test Structure (Arrange-Act-Assert):
+```python
+def test_descriptive_name():
+    # Arrange: Set up test data
+    input = test_value
+
+    # Act: Execute function
+    result = function(input)
+
+    # Assert: Verify outcome
+    assert result == expected
 ```
 
-## Guidelines:
-- **Descriptive Names**: test_returns_error_when_input_is_empty
-- **Clear Assertions**: Use specific error messages
-- **Test Data**: Use fixtures/factories/builders for test data
-- **Isolation**: Mock external dependencies
-- **Coverage**: Aim for high coverage of critical paths
+## Golden Rules:
 
-## When writing tests:
-1. **Explore first**: Read the code to understand what to test
-2. **Understand behavior**: What should this code do?
-3. **Identify test cases**: Normal, edge, error scenarios
-4. **Write from user perspective**: How will this be used?
-5. **Keep tests simple**: One test, one concept
-6. **Make failures informative**: Clear messages when tests fail
+✅ **DO:**
+- Descriptive names: `test_returns_none_when_input_empty`
+- One concept per test
+- Simple inline test data
+- Mock external dependencies
+- Keep tests independent
+
+❌ **DON'T:**
+- Test language/framework built-ins
+- Test third-party libraries
+- Write redundant tests
+- Test private implementation details
+- Use sleep() or arbitrary timeouts
+
+## Efficiency:
+- **3-5 tests per function** (happy + 2-4 edge/error cases)
+- **< 100ms per test** (mock slow operations)
+- **10-20 lines per test** maximum
+"""
+
+PROJECT_MD = """# Project Overview
+
+This is a placeholder project overview. Run `pf init --intelligent` to generate a comprehensive project overview automatically.
+
+## Purpose
+
+Describe what this project does in 2-3 sentences.
+
+## Architecture
+
+Key directories and their purposes:
+- `src/` - Source code
+- `tests/` - Test files
+- `docs/` - Documentation
+
+## Core Concepts
+
+Main abstractions, patterns, and conventions:
+- List key patterns used
+- Naming conventions
+- Code organization principles
+
+## Tech Stack
+
+- **Language**: (e.g., Python, TypeScript, Rust)
+- **Framework**: (if applicable)
+- **Key Dependencies**: (list major libraries)
+
+## Development Workflow
+
+```bash
+# Install dependencies
+# (command here)
+
+# Run tests
+# (command here)
+
+# Build
+# (command here)
+```
+
+## Notes for AI Agents
+
+- Follow existing code patterns in the codebase
+- Check related files before making changes
+- Maintain consistency with current architecture
 """
