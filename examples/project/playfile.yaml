@@ -1,0 +1,112 @@
+version: 1
+
+# Import shared configuration from .play/ directory
+imports:
+  - .play/tools.yaml
+  - .play/agents.yaml
+
+# Core TDD workflows - test, code, review cycle built-in
+#
+# NOTE: Validation commands are configured for pytest.
+# Customize the "validate" blocks if you need different test commands or options.
+#
+tasks:
+  # TDD Workflow: Red -> Green -> Refactor with automatic validation
+  - id: code-tdd
+    description: "Test-Driven Development: Create tests -> Implement -> Refactor -> Review"
+    working_dir: "."
+    files:
+      read:
+        - "**/*"
+    steps:
+      # Step 1: Write tests first (RED phase)
+      - agent:
+          use: tester
+          with:
+            prompt: "Create simple, efficient tests for: {{ inputs.prompt }}. Focus on core behavior and edge cases."
+
+      # Step 2: Implement to make tests pass (GREEN phase) with validation
+      - agent:
+          use: coder
+          with:
+            prompt: "Implement the feature with best practices: {{ inputs.prompt }}. Make the tests pass."
+        validate:
+          post_command: "pytest"
+          max_retries: 3
+          continue_on_failure: false
+
+      # Step 3: Refactor with best practices, ensure tests still pass (REFACTOR phase)
+      - agent:
+          use: coder
+          with:
+            prompt: "Refactor the implementation following best practices (SOLID, DRY, clean code). Ensure all tests still pass."
+        validate:
+          post_command: "pytest"
+          max_retries: 2
+          continue_on_failure: false
+
+      # Step 4: Review the final implementation
+      - agent:
+          use: reviewer
+          with:
+            prompt: "Review the TDD implementation for quality, best practices, and test coverage."
+
+  # Traditional: Implement -> Test -> Review with validation
+  - id: code
+    description: "Implement feature -> Create tests -> Review (with automatic validation)"
+    working_dir: "."
+    files:
+      read:
+        - "**/*"
+    steps:
+      # Step 1: Implement the feature with best practices
+      - agent:
+          use: coder
+          with:
+            prompt: "Implement following best practices: {{ inputs.prompt }}"
+
+      # Step 2: Create tests with validation
+      - agent:
+          use: tester
+          with:
+            prompt: "Create simple, efficient tests covering the implementation. Test happy path, edge cases, and errors."
+        validate:
+          post_command: "pytest"
+          max_retries: 2
+          continue_on_failure: false
+
+      # Step 3: Review implementation and tests
+      - agent:
+          use: reviewer
+          with:
+            prompt: "Review the implementation and tests for quality, best practices, and coverage."
+
+  # Bug Fix Workflow: Root cause -> Fix -> Validate -> Review
+  - id: bugfix
+    description: "Find root cause -> Fix with best practices -> Validate -> Review"
+    working_dir: "."
+    files:
+      read:
+        - "**/*"
+    steps:
+      # Step 1: Find root cause (100% sure before fixing) - dedicated debugger
+      - agent:
+          use: debugger
+          with:
+            prompt: "Investigate and find the ROOT CAUSE of: {{ inputs.prompt }}"
+
+      # Step 2: Fix the root cause with best practices and validation
+      - agent:
+          use: coder
+          with:
+            prompt: "Fix the root cause following best practices. Ensure the fix is minimal, targeted, and doesn't introduce new issues."
+        validate:
+          post_command: "pytest"
+          max_retries: 2
+          continue_on_failure: false
+
+      # Step 3: Review the bugfix
+      - agent:
+          use: reviewer
+          with:
+            prompt: "Review the bugfix: Is it addressing the root cause? Does it follow best practices? Are there any side effects?"

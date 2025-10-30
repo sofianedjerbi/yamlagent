@@ -1,0 +1,25 @@
+version: 1
+
+tools:
+  commands:
+    - id: echo
+      bin: echo
+
+agents:
+  - id: helper
+    role: "Helpful Assistant"
+    model: claude-sonnet-4-20250514
+    instructions: "You are a helpful assistant. Be concise and friendly."
+    tools:
+      mode: whitelist
+      commands: ["echo"]
+
+tasks:
+  - id: greet
+    description: "Say hello"
+    working_dir: "."
+    steps:
+      - agent:
+          use: helper
+          with:
+            prompt: "{{ inputs.prompt }}"

@@ -1,0 +1,44 @@
+# Tools configuration - available commands and MCP servers
+# Customize these tools based on your project's needs!
+
+tools:
+  commands:
+    # Version control
+    - id: git
+      bin: git
+      args_allow: ["status", "diff", "log", "add", "commit", "branch", "checkout"]
+      timeout: "2m"
+
+    # Build/task runner
+    - id: make
+      bin: make
+      args_allow: ["build", "test", "clean", "install"]
+      timeout: "10m"
+
+    # File utilities
+    - id: cat
+      bin: cat
+      timeout: "10s"
+
+    - id: ls
+      bin: ls
+      args_allow: ["-la", "-l", "-a", "-lh"]
+      timeout: "10s"
+
+    - id: find
+      bin: find
+      args_allow: [".", "-name", "-type", "-maxdepth"]
+      timeout: "30s"
+
+    - id: grep
+      bin: grep
+      args_allow: ["-r", "-i", "-n", "-l"]
+      timeout: "30s"
+
+  # Add language-specific tools as needed (python, node, cargo, go, mvn, etc.)
+  # Add MCP servers here if needed
+  # mcp:
+  #   - id: fs
+  #     transport: stdio
+  #     command: ["npx", "-y", "@modelcontextprotocol/server-filesystem", "/path/to/allowed/files"]
+  #     calls: ["read_file", "write_file", "list_directory"]
