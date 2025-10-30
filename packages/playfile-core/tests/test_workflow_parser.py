@@ -83,6 +83,58 @@ class TestAgentStepParser:
         with pytest.raises(ValidationError, match="missing value"):
             parser.parse(data)
 
+    def test_parse_step_with_validation_post_command(self):
+        data = {
+            "agent": {"use": "coder"},
+            "validate": {
+                "post_command": "pytest",
+                "max_retries": 2,
+            }
+        }
+        parser = AgentStepParser()
+        step = parser.parse(data)
+        assert step.agent.use == "coder"
+        assert step.validate is not None
+        assert step.validate.post_command == "pytest"
+        assert step.validate.max_retries == 2
+
+    def test_parse_step_with_validation_pre_and_post(self):
+        data = {
+            "agent": {"use": "coder"},
+            "validate": {
+                "pre_command": "uv sync",
+                "post_command": "pytest tests/",
+                "max_retries": 3,
+                "continue_on_failure": True,
+            }
+        }
+        parser = AgentStepParser()
+        step = parser.parse(data)
+        assert step.validate is not None
+        assert step.validate.pre_command == "uv sync"
+        assert step.validate.post_command == "pytest tests/"
+        assert step.validate.max_retries == 3
+        assert step.validate.continue_on_failure is True
+
+    def test_parse_step_with_validation_post_commands(self):
+        data = {
+            "agent": {"use": "coder"},
+            "validate": {
+                "post_commands": [
+                    {"command": "ruff check", "description": "Lint code"},
+                    {"command": "pytest", "description": "Run tests"},
+                ],
+                "max_retries": 2,
+            }
+        }
+        parser = AgentStepParser()
+        step = parser.parse(data)
+        assert step.validate is not None
+        assert len(step.validate.post_commands) == 2
+        assert step.validate.post_commands[0].command == "ruff check"
+        assert step.validate.post_commands[0].description == "Lint code"
+        assert step.validate.post_commands[1].command == "pytest"
+
 
 class TestTaskParser:
     def test_parse_minimal(self):

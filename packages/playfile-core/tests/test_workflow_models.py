@@ -6,7 +6,9 @@ from playfile_core.workflows import (
     AgentInvocation,
     AgentStep,
     FilesConfig,
+    StepValidation,
     Task,
+    ValidationCommand,
     Workflow,
 )
 
@@ -51,11 +53,113 @@ class TestAgentInvocation:
             invocation.use = "be-impl"
 
 
+class TestValidationCommand:
+    def test_validation_command_creation(self):
+        cmd = ValidationCommand(command="pytest", description="Run tests")
+        assert cmd.command == "pytest"
+        assert cmd.description == "Run tests"
+
+    def test_validation_command_no_description(self):
+        cmd = ValidationCommand(command="pytest")
+        assert cmd.command == "pytest"
+        assert cmd.description is None
+
+    def test_validation_command_empty_command(self):
+        with pytest.raises(ValueError, match="command cannot be empty"):
+            ValidationCommand(command="")
+
+    def test_validation_command_immutable(self):
+        cmd = ValidationCommand(command="pytest")
+        with pytest.raises(Exception):
+            cmd.command = "ruff"
+
+
+class TestStepValidation:
+    def test_step_validation_defaults(self):
+        validation = StepValidation()
+        assert validation.pre_command is None
+        assert validation.post_command is None
+        assert validation.post_commands == []
+        assert validation.max_retries == 0
+        assert validation.continue_on_failure is False
+
+    def test_step_validation_with_pre_command(self):
+        validation = StepValidation(pre_command="uv sync")
+        assert validation.pre_command == "uv sync"
+
+    def test_step_validation_with_post_command(self):
+        validation = StepValidation(post_command="pytest", max_retries=2)
+        assert validation.post_command == "pytest"
+        assert validation.max_retries == 2
+
+    def test_step_validation_with_post_commands(self):
+        cmds = [
+            ValidationCommand(command="ruff check", description="Lint"),
+            ValidationCommand(command="pytest", description="Test"),
+        ]
+        validation = StepValidation(post_commands=cmds, max_retries=3)
+        assert len(validation.post_commands) == 2
+        assert validation.max_retries == 3
+
+    def test_step_validation_both_post_command_and_commands(self):
+        cmds = [ValidationCommand(command="pytest")]
+        with pytest.raises(ValueError, match="Cannot specify both"):
+            StepValidation(post_command="pytest", post_commands=cmds)
+
+    def test_step_validation_negative_retries(self):
+        with pytest.raises(ValueError, match="max_retries must be >= 0"):
+            StepValidation(max_retries=-1)
+
+    def test_step_validation_continue_on_failure(self):
+        validation = StepValidation(
+            post_command="pytest",
+            max_retries=2,
+            continue_on_failure=True,
+        )
+        assert validation.continue_on_failure is True
+
+    def test_get_post_commands_from_single(self):
+        validation = StepValidation(post_command="pytest tests/")
+        cmds = validation.get_post_commands()
+        assert len(cmds) == 1
+        assert cmds[0].command == "pytest tests/"
+        assert cmds[0].description is None
+
+    def test_get_post_commands_from_list(self):
+        cmds = [
+            ValidationCommand(command="ruff check", description="Lint"),
+            ValidationCommand(command="pytest", description="Test"),
+        ]
+        validation = StepValidation(post_commands=cmds)
+        result = validation.get_post_commands()
+        assert len(result) == 2
+        assert result[0].command == "ruff check"
+        assert result[1].command == "pytest"
+
+    def test_get_post_commands_empty(self):
+        validation = StepValidation()
+        cmds = validation.get_post_commands()
+        assert cmds == []
+
+    def test_step_validation_immutable(self):
+        validation = StepValidation(max_retries=2)
+        with pytest.raises(Exception):
+            validation.max_retries = 3
+
+
 class TestAgentStep:
     def test_agent_step_creation(self):
         invocation = AgentInvocation(use="fe-impl", with_params={"prompt": "test"})
         step = AgentStep(agent=invocation)
         assert step.agent == invocation
+        assert step.validate is None
+
+    def test_agent_step_with_validation(self):
+        invocation = AgentInvocation(use="coder")
+        validation = StepValidation(post_command="pytest", max_retries=2)
+        step = AgentStep(agent=invocation, validate=validation)
+        assert step.agent == invocation
+        assert step.validate == validation
 
     def test_agent_step_immutable(self):
         invocation = AgentInvocation(use="fe-impl")
