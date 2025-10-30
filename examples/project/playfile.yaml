@@ -7,8 +7,8 @@ imports:
 
 # Core TDD workflows - test, code, review cycle built-in
 #
-# NOTE: Validation commands are configured for pytest.
-# Customize the "validate" blocks if you need different test commands or options.
+# NOTE: Validation commands are configured for Python with uv and pytest.
+# The "validate" blocks enable automatic testing after implementation steps.
 #
 tasks:
   # TDD Workflow: Red -> Green -> Refactor with automatic validation
@@ -31,7 +31,7 @@ tasks:
           with:
             prompt: "Implement the feature with best practices: {{ inputs.prompt }}. Make the tests pass."
         validate:
-          post_command: "pytest"
+          post_command: "uv run pytest"
           max_retries: 3
           continue_on_failure: false
 
@@ -41,7 +41,7 @@ tasks:
           with:
             prompt: "Refactor the implementation following best practices (SOLID, DRY, clean code). Ensure all tests still pass."
         validate:
-          post_command: "pytest"
+          post_command: "uv run pytest"
           max_retries: 2
           continue_on_failure: false
 
@@ -71,7 +71,7 @@ tasks:
           with:
             prompt: "Create simple, efficient tests covering the implementation. Test happy path, edge cases, and errors."
         validate:
-          post_command: "pytest"
+          post_command: "uv run pytest"
           max_retries: 2
           continue_on_failure: false
 
@@ -101,7 +101,7 @@ tasks:
           with:
             prompt: "Fix the root cause following best practices. Ensure the fix is minimal, targeted, and doesn't introduce new issues."
         validate:
-          post_command: "pytest"
+          post_command: "uv run pytest"
           max_retries: 2
           continue_on_failure: false
 

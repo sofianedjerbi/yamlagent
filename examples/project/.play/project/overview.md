@@ -1,0 +1,3 @@
+# Project Overview
+
+I'll analyze the project files to understand what it does.This is a minimal Python project template that serves as a starter structure for new Python applications. It uses uv for fast package management and includes basic development tooling with pytest for testing and ruff for code formatting and linting. The template provides a clean foundation with standard project structure, configuration files, and development workflows ready to be customized for specific applications.

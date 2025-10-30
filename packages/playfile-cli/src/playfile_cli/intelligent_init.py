@@ -15,7 +15,15 @@ CUSTOMIZATION_AGENT = Agent(
     id="playfile-customizer",
     role="Playfile Configuration Specialist",
     model="claude-sonnet-4-5-20250929",
-    instructions="Customize playfile.yaml for project. Return ONLY YAML without markdown.",
+    instructions="""You are a technical writer specializing in project documentation.
+
+CRITICAL: Output ONLY the requested content. NO explanations, NO thinking process, NO preamble.
+
+When asked to write documentation:
+- Write directly in the requested format
+- Do NOT include "I'll analyze..." or "Let me..."
+- Do NOT wrap in markdown code blocks
+- Start immediately with the actual content""",
     tools=AgentToolsConfig(mode=ToolsMode.BLACKLIST, commands=[]),
     limits=AgentLimits(runtime="5m", iterations=20),
 )
@@ -92,22 +100,21 @@ async def _generate_project_md(
     files_list = "\n".join(f"- {f}" for f in context.get("files", [])[:30])
 
     # Generate overview (very short)
-    overview_prompt = f"""Analyze this project and write a 2-3 sentence overview.
-
-WORKING DIRECTORY: . (current directory)
+    overview_prompt = f"""Write a 2-3 sentence project overview based on this context:
 
 PROJECT CONTEXT:
 - Type: {context['project_type']}
 - Package manager: {context.get('package_manager', 'unknown')}
 - Files: {', '.join(context.get('files', [])[:10])}
 
-Write ONLY 2-3 sentences describing what this project does and its primary purpose.
-No headers, no markdown formatting, just the sentences."""
+Output format: Just 2-3 sentences describing what this project does.
+Example: "This is a web API built with FastAPI. It provides REST endpoints for
+user management and authentication. The project uses PostgreSQL for data storage."
+
+Write ONLY the sentences. Do NOT include thinking, explanations, or markdown blocks."""
 
     # Generate guidelines (best practices)
-    guidelines_prompt = f"""Analyze this project and document its best practices and conventions.
-
-WORKING DIRECTORY: . (current directory)
+    guidelines_prompt = f"""Document this project's guidelines in markdown format.
 
 PROJECT CONTEXT:
 - Type: {context['project_type']}
@@ -118,20 +125,24 @@ PROJECT CONTEXT:
 FILES IN PROJECT:
 {files_list}
 
-Create project guidelines covering:
+Create a markdown document with these sections:
 
-1. **Code Organization**: Directory structure and where code belongs
-2. **Naming Conventions**: Files, classes, functions, variables
-3. **Architecture Patterns**: Key abstractions and design patterns
-4. **Development Workflow**: Install, test, build commands
-5. **Best Practices**: Code quality, testing, documentation standards
+## Code Organization
+(Directory structure and where code belongs)
 
-Focus on actionable information for AI agents:
-- Where to find existing code
-- What patterns/conventions to follow
-- How to integrate new code
+## Naming Conventions
+(Files, classes, functions, variables)
 
-Output ONLY the markdown content, no code blocks wrapper."""
+## Architecture Patterns
+(Key abstractions and design patterns used)
+
+## Development Workflow
+(Install, test, build commands)
+
+## Best Practices
+(Code quality, testing, documentation)
+
+Write ONLY the markdown document. Do NOT include thinking or code block wrappers."""
 
     try:
         executor = AgentExecutor(tools=None, console=console)
