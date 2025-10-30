@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import subprocess
 from typing import Any
 
 from playfile_core import YamlAgentConfig
@@ -10,6 +11,7 @@ from playfile_core.workflows.task import Task
 from rich.console import Console
 from rich.panel import Panel
 
+from playfile_cli.artifacts import ArtifactCollector, StepArtifact
 from playfile_cli.executor import AgentExecutor
 
 
@@ -70,6 +72,9 @@ class TaskRunner:
             self._console.print("[yellow]⚠ No steps defined for this task[/yellow]")
             return
 
+        # Initialize artifact collector for this task
+        artifacts = ArtifactCollector()
+
         # Execute each step
         for i, step in enumerate(task.steps, 1):
             agent_id = step.agent.use
@@ -84,8 +89,27 @@ class TaskRunner:
                 msg = f"Agent '{agent_id}' not found in configuration"
                 raise ValueError(msg)
 
-            # Render prompt with inputs
-            prompt = self._render_prompt(step.agent.with_params.get("prompt", ""), inputs)
+            # Render prompt with inputs and artifacts
+            base_prompt = self._render_prompt(step.agent.with_params.get("prompt", ""), inputs)
+
+            # Add working directory context
+            working_dir_context = f"WORKING DIRECTORY: {task.working_dir}\n\n"
+
+            # Add project overview context if available
+            project_context = self._get_project_context(task.working_dir)
+
+            # Build full prompt with all context
+            context_parts = [working_dir_context]
+
+            if project_context:
+                context_parts.append(f"{project_context}\n\n")
+
+            if artifacts.has_artifacts():
+                artifact_context = artifacts.get_context_for_next_step()
+                context_parts.append(f"{artifact_context}\n\n")
+
+            context_parts.append(base_prompt)
+            prompt = "".join(context_parts)
 
             # Collect files from task configuration
             files = self._collect_files(task)
@@ -95,25 +119,226 @@ class TaskRunner:
             agent_info = f" {agent.role} ({agent.model})"
             self._console.print(step_info + agent_info)
 
-            prompt_preview = prompt[:200] + ("..." if len(prompt) > 200 else "")
+            prompt_preview = base_prompt[:200] + ("..." if len(base_prompt) > 200 else "")
             self._console.print(f"[dim]Prompt: {prompt_preview}[/dim]")
+            if artifacts.has_artifacts():
+                num_artifacts = len(artifacts._artifacts)
+                self._console.print(f"[dim]Context: {num_artifacts} previous step(s)[/dim]")
             if files:
                 self._console.print(f"[dim]Files: {len(files)} file(s)[/dim]\n")
             else:
                 self._console.print()
 
-            # Execute agent (response is streamed live by executor)
+            # Execute step with retry logic and capture artifact
             try:
-                asyncio.run(
-                    self._executor.execute(agent, prompt, task.working_dir, files)
+                has_more_steps = i < len(task.steps)
+                summary = self._execute_step_with_retry(
+                    step, agent, prompt, task.working_dir, files, request_summary=has_more_steps
+                )
+
+                # Add artifact if we got a summary
+                if summary and has_more_steps:
+                    artifact = StepArtifact(
+                        step_number=i,
+                        agent_id=agent.id,
+                        agent_role=agent.role,
+                        summary=summary,
+                    )
+                    artifacts.add_artifact(artifact)
+
+            except Exception as e:
+                # If continue_on_failure is True, log error and continue
+                if step.validate and step.validate.continue_on_failure:
+                    msg = f"\n[bold yellow]⚠ Step failed but continuing:[/bold yellow] {e}\n"
+                    self._console.print(msg)
+                else:
+                    self._console.print(f"\n[bold red]✗ Error:[/bold red] {e}")
+                    raise
+
+        self._console.print("\n[bold green]✓ Task completed successfully[/bold green]\n")
+
+    def _execute_step_with_retry(
+        self,
+        step: Any,
+        agent: Any,
+        prompt: str,
+        working_dir: str,
+        files: list[str] | None,
+        request_summary: bool = False,
+    ) -> str | None:
+        """Execute a step with retry logic and validation.
+
+        Args:
+            step: Agent step configuration
+            agent: Agent to execute
+            prompt: Rendered prompt
+            working_dir: Working directory for execution
+            files: List of files to provide
+            request_summary: Whether to request a summary after execution
+
+        Returns:
+            Summary text if request_summary=True, otherwise None
+
+        Raises:
+            Exception: If step fails after all retries
+        """
+        validation = step.validate
+        max_attempts = 1 + (validation.max_retries if validation else 0)
+
+        # Run pre-command if specified
+        if validation and validation.pre_command:
+            self._console.print(f"[dim]→ Running pre-validation: {validation.pre_command}[/dim]")
+            success, output = self._run_command(validation.pre_command, working_dir)
+            if not success:
+                msg = f"Pre-validation command failed: {validation.pre_command}"
+                raise RuntimeError(msg)
+            self._console.print("[dim]✓ Pre-validation passed[/dim]\n")
+
+        # Execute agent with retry loop
+        validation_failures = []
+
+        for attempt in range(1, max_attempts + 1):
+            if attempt > 1:
+                retry_msg = (
+                    f"\n[bold yellow]↻ Retry attempt "
+                    f"{attempt - 1}/{validation.max_retries}[/bold yellow]\n"
+                )
+                self._console.print(retry_msg)
+
+                # Add validation failure context to prompt for retry
+                if validation_failures:
+                    failure_context = self._format_validation_failures(validation_failures)
+                    retry_prompt = f"{failure_context}\n\n{prompt}"
+                else:
+                    retry_prompt = prompt
+            else:
+                retry_prompt = prompt
+
+            # Execute agent
+            try:
+                result = asyncio.run(
+                    self._executor.execute(
+                        agent, retry_prompt, working_dir, files, request_summary=request_summary
+                    )
                 )
                 # Response already printed by executor during streaming
 
             except Exception as e:
-                self._console.print(f"\n[bold red]✗ Error:[/bold red] {e}")
-                raise
+                # Agent execution failed
+                if attempt == max_attempts:
+                    # No more retries
+                    raise
+                self._console.print(f"\n[yellow]⚠ Agent execution failed: {e}[/yellow]")
+                continue
 
-        self._console.print("\n[bold green]✓ Task completed successfully[/bold green]\n")
+            # Run post-validation commands if specified
+            if validation:
+                post_commands = validation.get_post_commands()
+                if post_commands:
+                    check_msg = (
+                        f"\n[dim]→ Running validation "
+                        f"({len(post_commands)} check(s))...[/dim]"
+                    )
+                    self._console.print(check_msg)
+
+                    all_passed = True
+                    validation_failures = []  # Reset failures for this attempt
+
+                    for cmd in post_commands:
+                        desc = cmd.description or cmd.command
+                        self._console.print(f"[dim]  • {desc}[/dim]")
+
+                        success, output = self._run_command(cmd.command, working_dir)
+                        if not success:
+                            all_passed = False
+                            validation_failures.append({
+                                "command": cmd.command,
+                                "description": desc,
+                                "output": output,
+                            })
+
+                            if attempt == max_attempts:
+                                # No more retries
+                                msg = f"Validation failed: {cmd.command}"
+                                raise RuntimeError(msg)
+                            self._console.print(f"[yellow]    ✗ Validation failed: {desc}[/yellow]")
+                            # Show truncated output
+                            if output:
+                                preview = output[:200] + ("..." if len(output) > 200 else "")
+                                self._console.print(f"[dim]    Output: {preview}[/dim]")
+                            break
+                        else:
+                            self._console.print("[dim]    ✓ Passed[/dim]")
+
+                    if all_passed:
+                        self._console.print("[dim]✓ All validations passed[/dim]")
+                        return result  # Success!
+                    else:
+                        # Validation failed, retry with context
+                        continue
+                else:
+                    # No validation commands, consider success
+                    return result
+            else:
+                # No validation configured, consider success
+                return result
+
+        # Should never reach here, but just in case
+        msg = "Step failed after all retry attempts"
+        raise RuntimeError(msg)
+
+    def _format_validation_failures(self, failures: list[dict]) -> str:
+        """Format validation failures for agent context.
+
+        Args:
+            failures: List of failure dicts with command, description, output
+
+        Returns:
+            Formatted failure message
+        """
+        lines = ["## VALIDATION FAILURES - Please fix these issues:\n"]
+
+        for i, failure in enumerate(failures, 1):
+            lines.append(f"{i}. {failure['description']}")
+            lines.append(f"   Command: {failure['command']}")
+            if failure['output']:
+                lines.append(f"   Output:\n   {failure['output']}\n")
+            else:
+                lines.append("")
+
+        return "\n".join(lines)
+
+    def _run_command(self, command: str, working_dir: str) -> tuple[bool, str]:
+        """Run a shell command and return success status with output.
+
+        Args:
+            command: Command to execute
+            working_dir: Working directory
+
+        Returns:
+            Tuple of (success: bool, output: str)
+        """
+        try:
+            result = subprocess.run(
+                command,
+                shell=True,
+                cwd=working_dir,
+                capture_output=True,
+                text=True,
+                timeout=300,  # 5 minute timeout
+            )
+            # Combine stdout and stderr
+            output = result.stdout
+            if result.stderr:
+                output += "\n" + result.stderr
+
+            return (result.returncode == 0, output.strip())
+        except subprocess.TimeoutExpired:
+            self._console.print("[red]Command timeout (5 minutes)[/red]")
+            return (False, "Command timeout (5 minutes)")
+        except Exception as e:
+            self._console.print(f"[red]Command execution error: {e}[/red]")
+            return (False, f"Command execution error: {e}")
 
     def _collect_files(self, task: Task) -> list[str] | None:
         """Collect files from task configuration.
@@ -147,6 +372,28 @@ class TaskRunner:
                     files.append(path)
 
         return files if files else None
+
+    def _get_project_context(self, working_dir: str) -> str | None:
+        """Get project overview context from .play/project.md if available.
+
+        Args:
+            working_dir: Working directory
+
+        Returns:
+            Project context string or None
+        """
+        from pathlib import Path
+
+        project_md = Path(working_dir) / ".play" / "project.md"
+
+        if project_md.exists():
+            try:
+                content = project_md.read_text()
+                return f"# PROJECT OVERVIEW\n\n{content}"
+            except Exception:
+                return None
+
+        return None
 
     def _render_prompt(self, prompt_template: str, inputs: dict[str, Any]) -> str:
         """Render prompt template with input variables.
