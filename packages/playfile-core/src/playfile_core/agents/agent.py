@@ -48,12 +48,17 @@ class Agent:
         """Get instructions as Path if it's a file path."""
         if isinstance(self.instructions, Path):
             return self.instructions
-        if isinstance(self.instructions, str) and (
-            self.instructions.endswith((".md", ".txt"))
-            or "/" in self.instructions
-            or "\\" in self.instructions
-        ):
-            return Path(self.instructions)
+        if isinstance(self.instructions, str):
+            # Check if it looks like a file path
+            # Must end with file extension or contain path separator at start
+            if self.instructions.endswith((".md", ".txt")):
+                return Path(self.instructions)
+            # Check for actual path separators (not just backslash in string)
+            # A path should start with ./ or / or contain path-like structure
+            if self.instructions.startswith(("./", "/", "../")) or (
+                "/" in self.instructions and "\n" not in self.instructions
+            ):
+                return Path(self.instructions)
         return None
 
     def get_instructions_content(self) -> str:
