@@ -30,15 +30,13 @@ class StepValidation:
 
     Attributes:
         pre_command: Command to run before agent execution (environment check)
-        post_command: Single command to run after agent execution (simple validation)
-        post_commands: Multiple commands to run after agent execution
+        command: Single command or list of commands to run after agent execution
         max_retries: Maximum number of retry attempts (0 = no retries)
         continue_on_failure: If True, continue to next step even if validation fails
     """
 
     pre_command: str | None = None
-    post_command: str | None = None
-    post_commands: list[ValidationCommand] = field(default_factory=list)
+    command: str | list[ValidationCommand] | None = None
     max_retries: int = 0
     continue_on_failure: bool = False
 
@@ -48,20 +46,19 @@ class StepValidation:
             msg = f"max_retries must be >= 0, got {self.max_retries}"
             raise ValueError(msg)
 
-        # Ensure only one of post_command or post_commands is specified
-        if self.post_command and self.post_commands:
-            msg = "Cannot specify both 'post_command' and 'post_commands'"
-            raise ValueError(msg)
-
-    def get_post_commands(self) -> list[ValidationCommand]:
-        """Get all post-validation commands as a list.
+    def get_commands(self) -> list[ValidationCommand]:
+        """Get all validation commands as a list.
 
         Returns:
             List of ValidationCommand objects
         """
-        if self.post_command:
-            return [ValidationCommand(command=self.post_command, description=None)]
-        return self.post_commands
+        if self.command is None:
+            return []
+
+        if isinstance(self.command, str):
+            return [ValidationCommand(command=self.command, description=None)]
+
+        return self.command
 
 
 @dataclass(frozen=True)

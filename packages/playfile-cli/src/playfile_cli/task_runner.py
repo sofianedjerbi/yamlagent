@@ -267,7 +267,7 @@ class TaskRunner:
 
             # Run post-validation commands if specified
             if validation:
-                post_commands = validation.get_post_commands()
+                post_commands = validation.get_commands()
                 if post_commands:
                     check_msg = (
                         f"\n[dim]→ Running validation "

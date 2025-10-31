@@ -58,7 +58,7 @@ tasks:
             - tests  # Get test requirements
         # Uncomment and customize validation for your project:
         # validate:
-        #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
+        #   command: "make test"  # or: npm test, pytest, cargo test, etc.
         #   max_retries: 3
         #   continue_on_failure: false
 
@@ -74,7 +74,7 @@ tasks:
             - implementation  # Current implementation to refactor
         # Uncomment and customize validation for your project:
         # validate:
-        #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
+        #   command: "make test"  # or: npm test, pytest, cargo test, etc.
         #   max_retries: 2
         #   continue_on_failure: false
 
@@ -111,7 +111,7 @@ tasks:
             prompt: "Create simple, efficient tests covering the implementation. Test happy path, edge cases, and errors."
         # Uncomment and customize validation for your project:
         # validate:
-        #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
+        #   command: "make test"  # or: npm test, pytest, cargo test, etc.
         #   max_retries: 2
         #   continue_on_failure: false
 
@@ -145,7 +145,7 @@ tasks:
             prompt: "Fix the root cause following best practices. Ensure the fix is minimal, targeted, and doesn't introduce new issues."
         # Uncomment and customize validation for your project:
         # validate:
-        #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
+        #   command: "make test"  # or: npm test, pytest, cargo test, etc.
         #   max_retries: 2
         #   continue_on_failure: false
 

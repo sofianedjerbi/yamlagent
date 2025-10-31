@@ -443,11 +443,11 @@ YAML SCHEMA (must follow exactly):
 - version: 1
 - imports: [list of .play/*.yaml files]
 - tasks: [list of task objects with id, description, working_dir, files, steps]
-- Each step has: agent (with use, with), optional validate (with post_command, max_retries)
+- Each step has: agent (with use, with), optional validate (with command, max_retries)
 
 CRITICAL CUSTOMIZATION TASKS:
 1. UNCOMMENT ALL validation blocks (remove the # comment markers)
-2. Set post_command to: {test_cmd}
+2. Set command to: {test_cmd}
 3. Keep max_retries as-is (2 or 3 depending on step)
 4. Update file patterns for {context['project_type']} if needed
 5. Maintain all step names and structure
@@ -460,7 +460,7 @@ EXAMPLE - Before:
     with:
       prompt: "..."
   # validate:
-  #   post_command: "make test"
+  #   command: "make test"
   #   max_retries: 2
 ```
 
@@ -472,7 +472,7 @@ EXAMPLE - After (UNCOMMENTED):
     with:
       prompt: "..."
   validate:
-    post_command: "{test_cmd}"
+    command: "{test_cmd}"
     max_retries: 2
 ```
 
