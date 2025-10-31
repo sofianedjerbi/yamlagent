@@ -11,6 +11,7 @@ from dacite.exceptions import DaciteError
 
 from playfile_core.exceptions import ParseError, ValidationError
 from playfile_core.tools.agent_tools import AgentTools
+from playfile_core.tools.command import ArgsMode
 
 
 class AgentToolsParser:
@@ -20,7 +21,7 @@ class AgentToolsParser:
         """Initialize parser."""
         self._dacite_config = Config(
             strict=True,
-            cast=[Path],
+            cast=[Path, ArgsMode],
         )
 
     def parse(self, content: str) -> AgentTools:
