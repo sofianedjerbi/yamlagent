@@ -68,49 +68,7 @@ tasks:
           with:
             prompt: "Review the feature implementation against the technical spec. Check architecture, quality, and test coverage."
 
-  # TDD Workflow: Red -> Green -> Refactor with automatic validation
-  - id: code-tdd
-    description: "Test-Driven Development: Create tests -> Implement -> Refactor -> Review"
-    working_dir: "."
-    files:
-      read:
-        - "**/*"
-    steps:
-      # Step 1: Write tests first (RED phase)
-      - agent:
-          use: tester
-          with:
-            prompt: "Create simple, efficient tests for: {{ inputs.prompt }}. Focus on core behavior and edge cases."
-
-      # Step 2: Implement to make tests pass (GREEN phase) with validation
-      - agent:
-          use: coder
-          with:
-            prompt: "Implement the feature with best practices: {{ inputs.prompt }}. Make the tests pass."
-        # Uncomment and customize validation for your project:
-        # validate:
-        #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
-        #   max_retries: 3
-        #   continue_on_failure: false
-
-      # Step 3: Refactor with best practices, ensure tests still pass (REFACTOR phase)
-      - agent:
-          use: coder
-          with:
-            prompt: "Refactor the implementation following best practices (SOLID, DRY, clean code). Ensure all tests still pass."
-        # Uncomment and customize validation for your project:
-        # validate:
-        #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
-        #   max_retries: 2
-        #   continue_on_failure: false
-
-      # Step 4: Review the final implementation
-      - agent:
-          use: reviewer
-          with:
-            prompt: "Review the TDD implementation for quality, best practices, and test coverage."
-
-  # Traditional: Implement -> Test -> Review with validation
+  # Quick: Implement -> Test -> Review with validation
   - id: code
     description: "Implement feature -> Create tests -> Review (with automatic validation)"
     working_dir: "."
