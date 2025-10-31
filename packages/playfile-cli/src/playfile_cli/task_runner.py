@@ -133,18 +133,23 @@ class TaskRunner:
             try:
                 has_more_steps = i < len(task.steps)
 
-                # Determine next agent's role if there are more steps
+                # Determine next agent's role and task name if there are more steps
                 next_agent_role = None
+                next_task_name = None
                 if has_more_steps:
                     next_step = task.steps[i]  # i is 1-indexed, so this gives us the next step
                     next_agent_id = next_step.agent.use
                     next_agent = self._config.agents.get_agent(next_agent_id)
                     if next_agent:
                         next_agent_role = next_agent.role
+                    # Get next step's name if available
+                    if next_step.name:
+                        next_task_name = next_step.name
 
                 summary = self._execute_step_with_retry(
                     step, agent, prompt, task.working_dir, files,
-                    request_summary=has_more_steps, next_agent_role=next_agent_role
+                    request_summary=has_more_steps, next_agent_role=next_agent_role,
+                    next_task_name=next_task_name
                 )
 
                 # Add artifact if we got a summary
@@ -177,6 +182,7 @@ class TaskRunner:
         files: list[str] | None,
         request_summary: bool = False,
         next_agent_role: str | None = None,
+        next_task_name: str | None = None,
     ) -> str | None:
         """Execute a step with retry logic and validation.
 
@@ -188,6 +194,7 @@ class TaskRunner:
             files: List of files to provide
             request_summary: Whether to request a summary after execution
             next_agent_role: Role of the next agent in the workflow
+            next_task_name: Name of the next task/step
 
         Returns:
             Summary text if request_summary=True, otherwise None
@@ -232,7 +239,8 @@ class TaskRunner:
                 result = asyncio.run(
                     self._executor.execute(
                         agent, retry_prompt, working_dir, files,
-                        request_summary=request_summary, next_agent_role=next_agent_role
+                        request_summary=request_summary, next_agent_role=next_agent_role,
+                        next_task_name=next_task_name
                     )
                 )
                 # Response already printed by executor during streaming
