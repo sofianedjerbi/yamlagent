@@ -32,13 +32,14 @@ class ContextIndicator:
         if not self._last_usage:
             return ""
 
-        # Get total input tokens from usage (including cached tokens)
+        # Get total input tokens from usage
+        # Note: cache_read_tokens are reused from cache, not new context consumption
+        # Only count new input tokens and cache creation tokens as actual context usage
         input_tokens = self._last_usage.get("input_tokens", 0)
         cache_creation_tokens = self._last_usage.get("cache_creation_input_tokens", 0)
-        cache_read_tokens = self._last_usage.get("cache_read_input_tokens", 0)
 
-        # Total input context = new + cache creation + cache reads
-        total_input_tokens = input_tokens + cache_creation_tokens + cache_read_tokens
+        # Total actual new context = new input + cache creation (not cache reads)
+        total_input_tokens = input_tokens + cache_creation_tokens
 
         # Calculate percentage used (0% = all free, 100% = all used)
         pct_used = (total_input_tokens / self._max_tokens) * 100
