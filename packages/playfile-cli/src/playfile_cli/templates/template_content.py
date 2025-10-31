@@ -20,6 +20,54 @@ imports:
 #   - For Make: "make test"
 #
 tasks:
+  # Feature Workflow: Architect -> TDD with validation
+  - id: feature
+    description: "Full feature: Technical spec -> Tests -> Implement -> Refactor -> Review"
+    working_dir: "."
+    files:
+      read:
+        - "**/*"
+    steps:
+      # Step 1: Create technical specification
+      - agent:
+          use: architect
+          with:
+            prompt: "Create detailed technical specification for: {{ inputs.prompt }}. Define components, data models, APIs, and integration points."
+
+      # Step 2: Write tests first based on spec (RED phase)
+      - agent:
+          use: tester
+          with:
+            prompt: "Create tests based on the technical specification above. Focus on API contracts, data models, and core behavior."
+
+      # Step 3: Implement to make tests pass (GREEN phase) with validation
+      - agent:
+          use: coder
+          with:
+            prompt: "Implement the feature following the technical specification. Make the tests pass."
+        # Uncomment and customize validation for your project:
+        # validate:
+        #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
+        #   max_retries: 3
+        #   continue_on_failure: false
+
+      # Step 4: Refactor with best practices (REFACTOR phase)
+      - agent:
+          use: coder
+          with:
+            prompt: "Refactor the implementation following SOLID, DRY principles. Ensure all tests still pass."
+        # Uncomment and customize validation for your project:
+        # validate:
+        #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
+        #   max_retries: 2
+        #   continue_on_failure: false
+
+      # Step 5: Review the complete implementation
+      - agent:
+          use: reviewer
+          with:
+            prompt: "Review the feature implementation against the technical spec. Check architecture, quality, and test coverage."
+
   # TDD Workflow: Red -> Green -> Refactor with automatic validation
   - id: code-tdd
     description: "Test-Driven Development: Create tests -> Implement -> Refactor -> Review"
