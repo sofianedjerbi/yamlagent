@@ -142,6 +142,7 @@ class TemplateManager:
         templates.add(".play/agents/tester.md", template_content.TEST_WRITER_INSTRUCTIONS)
         templates.add(".play/agents/debugger.md", template_content.DEBUGGER_INSTRUCTIONS)
         templates.add(".play/agents/reviewer.md", template_content.REVIEWER_INSTRUCTIONS)
+        templates.add(".play/agents/architect.md", template_content.ARCHITECT_INSTRUCTIONS)
 
         # Project context for agent awareness
         templates.add(".play/project/overview.md", template_content.PROJECT_OVERVIEW)

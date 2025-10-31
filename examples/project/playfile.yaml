@@ -7,13 +7,8 @@ imports:
 
 # Core TDD workflows - test, code, review cycle built-in
 #
-# NOTE: Validation commands are configured for Python with pytest.
-# Customize the "validate" blocks as needed:
-#   - For Python: "pytest" or "python -m pytest" or "uv run pytest"
-#   - For Node.js: "npm test" or "npm run test"
-#   - For Rust: "cargo test"
-#   - For Go: "go test ./..."
-#   - For Make: "make test"
+# NOTE: Validation commands are configured for Python/pytest.
+# Customize the "validate" blocks if you need different test commands.
 #
 tasks:
   # TDD Workflow: Red -> Green -> Refactor with automatic validation
@@ -22,13 +17,7 @@ tasks:
     working_dir: "."
     files:
       read:
-        - "**/*.py"
-        - "pyproject.toml"
-        - "**/*.yaml"
-        - "**/*.yml"
-        - "**/*.toml"
-        - "**/*.txt"
-        - "**/*.md"
+        - "**/*"
     steps:
       # Step 1: Write tests first (RED phase)
       - agent:
@@ -68,13 +57,7 @@ tasks:
     working_dir: "."
     files:
       read:
-        - "**/*.py"
-        - "pyproject.toml"
-        - "**/*.yaml"
-        - "**/*.yml"
-        - "**/*.toml"
-        - "**/*.txt"
-        - "**/*.md"
+        - "**/*"
     steps:
       # Step 1: Implement the feature with best practices
       - agent:
@@ -104,13 +87,7 @@ tasks:
     working_dir: "."
     files:
       read:
-        - "**/*.py"
-        - "pyproject.toml"
-        - "**/*.yaml"
-        - "**/*.yml"
-        - "**/*.toml"
-        - "**/*.txt"
-        - "**/*.md"
+        - "**/*"
     steps:
       # Step 1: Find root cause (100% sure before fixing) - dedicated debugger
       - agent:
