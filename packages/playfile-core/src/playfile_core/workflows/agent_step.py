@@ -71,10 +71,12 @@ class AgentInvocation:
     Attributes:
         use: Agent ID to invoke
         with_params: Parameters to pass to the agent (prompt, etc.)
+        context_from: List of step IDs to include context from (optional)
     """
 
     use: str
     with_params: dict[str, str] = field(default_factory=dict)
+    context_from: list[str] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         """Validate agent invocation."""
@@ -89,11 +91,13 @@ class AgentStep:
 
     Attributes:
         agent: Agent invocation configuration
+        id: Optional step ID for referencing in context_from
         name: Optional human-readable step name
         validate: Optional validation and retry configuration
     """
 
     agent: AgentInvocation
+    id: str | None = None
     name: str | None = None
     validate: StepValidation | None = None
 

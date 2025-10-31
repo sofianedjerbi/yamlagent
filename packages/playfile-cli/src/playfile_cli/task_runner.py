@@ -104,9 +104,12 @@ class TaskRunner:
             if project_context:
                 context_parts.append(f"{project_context}\n\n")
 
+            # Get context from specified steps or all previous steps
+            context_from = step.agent.context_from if step.agent.context_from else None
             if artifacts.has_artifacts():
-                artifact_context = artifacts.get_context_for_next_step()
-                context_parts.append(f"{artifact_context}\n\n")
+                artifact_context = artifacts.get_context_for_next_step(context_from)
+                if artifact_context:
+                    context_parts.append(f"{artifact_context}\n\n")
 
             context_parts.append(base_prompt)
             prompt = "".join(context_parts)
@@ -121,9 +124,17 @@ class TaskRunner:
 
             prompt_preview = base_prompt[:200] + ("..." if len(base_prompt) > 200 else "")
             self._console.print(f"[dim]Prompt: {prompt_preview}[/dim]")
+
+            # Show context information
             if artifacts.has_artifacts():
-                num_artifacts = len(artifacts._artifacts)
-                self._console.print(f"[dim]Context: {num_artifacts} previous step(s)[/dim]")
+                if context_from:
+                    # Show which specific steps are being used
+                    self._console.print(f"[dim]Context from: {', '.join(context_from)}[/dim]")
+                else:
+                    # Show all previous steps
+                    num_artifacts = len(artifacts._artifacts)
+                    self._console.print(f"[dim]Context: {num_artifacts} previous step(s)[/dim]")
+
             if files:
                 self._console.print(f"[dim]Files: {len(files)} file(s)[/dim]\n")
             else:
@@ -156,6 +167,7 @@ class TaskRunner:
                 if summary and has_more_steps:
                     artifact = StepArtifact(
                         step_number=i,
+                        step_id=step.id,
                         agent_id=agent.id,
                         agent_role=agent.role,
                         summary=summary,

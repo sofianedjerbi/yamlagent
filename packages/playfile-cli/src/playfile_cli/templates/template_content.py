@@ -29,25 +29,33 @@ tasks:
         - "**/*"
     steps:
       # Step 1: Create technical specification
-      - name: "Create technical specification"
+      - id: spec
+        name: "Create technical specification"
         agent:
           use: architect
           with:
             prompt: "Create technical specification for: {{ inputs.prompt }}"
 
       # Step 2: Write tests first based on spec (RED phase)
-      - name: "Write tests (RED phase)"
+      - id: tests
+        name: "Write tests (RED phase)"
         agent:
           use: tester
           with:
             prompt: "Create tests for the specified feature. Cover API contracts, data models, and core behavior."
+          context_from:
+            - spec  # Get architect's technical specification
 
       # Step 3: Implement to make tests pass (GREEN phase) with validation
-      - name: "Implement feature (GREEN phase)"
+      - id: implementation
+        name: "Implement feature (GREEN phase)"
         agent:
           use: coder
           with:
             prompt: "Implement the feature following the technical specification. Make the tests pass."
+          context_from:
+            - spec   # Get technical specification
+            - tests  # Get test requirements
         # Uncomment and customize validation for your project:
         # validate:
         #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
@@ -55,11 +63,15 @@ tasks:
         #   continue_on_failure: false
 
       # Step 4: Refactor with best practices (REFACTOR phase)
-      - name: "Refactor (REFACTOR phase)"
+      - id: refactored
+        name: "Refactor (REFACTOR phase)"
         agent:
           use: coder
           with:
             prompt: "Refactor the implementation following SOLID, DRY principles. Keep functionality intact."
+          context_from:
+            - spec            # Original spec for reference
+            - implementation  # Current implementation to refactor
         # Uncomment and customize validation for your project:
         # validate:
         #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
@@ -72,6 +84,9 @@ tasks:
           use: reviewer
           with:
             prompt: "Review the feature implementation. Check architecture, code quality, and whether tests cover key scenarios."
+          context_from:
+            - spec        # Original requirements
+            - refactored  # Final implementation
 
   # Quick: Implement -> Test -> Review with validation
   - id: code
