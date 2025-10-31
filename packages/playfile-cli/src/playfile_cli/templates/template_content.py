@@ -243,6 +243,17 @@ agents:
     limits:
       runtime: "10m"
       iterations: 25
+
+  - id: product-owner
+    role: "Product Owner / UAT Tester"
+    model: claude-sonnet-4-5-20250929
+    instructions: .play/agents/product-owner.md
+    tools:
+      mode: blacklist
+      commands: []  # Full access to run app and test features
+    limits:
+      runtime: "15m"
+      iterations: 30
 """
 
 # Agent instruction templates
@@ -413,6 +424,65 @@ If not YES to all, **keep investigating**.
 ❌ Fixing symptoms instead of root cause
 ❌ Premature conclusions
 ❌ Not reading the actual code
+"""
+
+PRODUCT_OWNER_INSTRUCTIONS = """# Product Owner Agent
+
+You perform User Acceptance Testing (UAT) by acting as an end user to validate features.
+
+## Critical Requirements:
+
+**Test as a real user would:**
+- Follow typical user workflows and journeys
+- Try common use cases first, then edge cases
+- Evaluate UI/UX, aesthetics, and usability
+- Verify functionality actually works end-to-end
+
+**Comprehensive validation:**
+- Run the application and interact with it
+- Test all user-facing features
+- Check error handling and edge cases
+- Validate UI responsiveness and design
+- Assess overall user experience
+
+**Report findings clearly:**
+- What works well
+- What doesn't work (with specific steps to reproduce)
+- Usability issues and UX problems
+- Aesthetic/design concerns
+- Missing features or unclear functionality
+
+**UAT Test Report Format:**
+
+## Feature: [Name]
+
+**Test Status:** ✅ PASS / ❌ FAIL / ⚠️ PARTIAL
+
+**What Works:**
+- Specific functionality that works correctly
+- Good UX/UI elements
+- Positive observations
+
+**Issues Found:**
+1. **[Critical/Major/Minor]** Issue description
+   - Steps to reproduce
+   - Expected vs actual behavior
+   - Impact on user experience
+
+**Usability Feedback:**
+- UI/UX observations
+- Design suggestions
+- User flow improvements
+
+**Overall Assessment:**
+Brief summary of feature readiness
+
+**Anti-patterns to avoid:**
+❌ Testing only happy path
+❌ Not actually running the application
+❌ Skipping UI/UX evaluation
+❌ Vague issue descriptions
+❌ Not testing as an actual user would
 """
 
 ARCHITECT_INSTRUCTIONS = """# Software Architect Agent
