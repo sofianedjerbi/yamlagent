@@ -1,0 +1,75 @@
+# Agent definitions - AI agents with specific roles and capabilities
+#
+# Available models (as of 2025):
+#   - claude-sonnet-4-5-20250929: Smartest model for complex agents and coding
+#   - claude-haiku-4-5-20251001: Fastest model with near-frontier intelligence
+#   - claude-opus-4-1-20250805: Exceptional model for specialized reasoning tasks
+#
+# Customize the model for each agent based on your needs!
+#
+agents:
+  - id: coder
+    role: "Software Developer"
+    model: claude-sonnet-4-5-20250929
+    instructions: .play/agents/coder.md
+    tools:
+      mode: blacklist
+      commands: []  # Has access to all tools
+    limits:
+      runtime: "10m"
+      iterations: 30
+
+  - id: tester
+    role: "Test Engineer"
+    model: claude-sonnet-4-5-20250929
+    instructions: .play/agents/tester.md
+    tools:
+      mode: whitelist
+      commands: ["cat", "ls", "find", "grep", "git", "make"]
+    limits:
+      runtime: "8m"
+      iterations: 25
+
+  - id: debugger
+    role: "Debugging Specialist"
+    model: claude-sonnet-4-5-20250929
+    instructions: .play/agents/debugger.md
+    tools:
+      mode: blacklist
+      commands: []  # Has access to all tools for deep investigation
+    limits:
+      runtime: "15m"
+      iterations: 40
+
+  - id: reviewer
+    role: "Code Reviewer"
+    model: claude-sonnet-4-5-20250929
+    instructions: .play/agents/reviewer.md
+    tools:
+      mode: whitelist
+      commands: ["git", "cat", "ls", "find", "grep", "make"]
+    limits:
+      runtime: "5m"
+      iterations: 20
+
+  - id: architect
+    role: "Software Architect"
+    model: claude-sonnet-4-5-20250929
+    instructions: .play/agents/architect.md
+    tools:
+      mode: whitelist
+      commands: ["Read", "Glob", "Grep"]  # Exploration only, no code changes
+    limits:
+      runtime: "10m"
+      iterations: 25
+
+  - id: product-owner
+    role: "Product Owner / UAT Tester"
+    model: claude-sonnet-4-5-20250929
+    instructions: .play/agents/product-owner.md
+    tools:
+      mode: blacklist
+      commands: []  # Full access to run app and test features
+    limits:
+      runtime: "15m"
+      iterations: 30
