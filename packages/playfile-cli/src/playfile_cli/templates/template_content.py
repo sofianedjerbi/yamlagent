@@ -52,7 +52,17 @@ tasks:
         agent:
           use: coder
           with:
-            prompt: "Implement the feature following the technical specification. Make the tests pass."
+            prompt: |
+              ORIGINAL REQUEST: "{{ inputs.prompt }}"
+
+              Implement the COMPLETE feature from the technical specification provided above.
+              Every component, file, and interface mentioned in the spec must be fully implemented.
+
+              The technical specification is your source of truth - implement everything it describes.
+              Pay attention to the original user's intent and any priorities they emphasized.
+
+              Tests provide validation checkpoints to ensure correctness, but your goal is
+              to deliver the complete feature as specified, not just pass the tests.
           context_from:
             - spec   # Get technical specification
             - tests  # Get test requirements
@@ -68,7 +78,15 @@ tasks:
         agent:
           use: coder
           with:
-            prompt: "Refactor the implementation following SOLID, DRY principles. Keep functionality intact."
+            prompt: |
+              ORIGINAL REQUEST: "{{ inputs.prompt }}"
+
+              Refactor the implementation following SOLID, DRY principles while keeping functionality intact.
+
+              Ensure the refactored code still implements EVERYTHING from the technical specification.
+              Improve code quality, organization, and maintainability without removing any features.
+
+              The original specification is still your source of truth - nothing should be lost during refactoring.
           context_from:
             - spec            # Original spec for reference
             - implementation  # Current implementation to refactor
@@ -101,7 +119,13 @@ tasks:
         agent:
           use: coder
           with:
-            prompt: "Implement following best practices: {{ inputs.prompt }}"
+            prompt: |
+              REQUEST: "{{ inputs.prompt }}"
+
+              Implement the complete feature following best practices (SOLID, DRY, clean code).
+              Make sure the implementation is thorough and addresses all aspects of the request.
+
+              Consider edge cases, error handling, and maintainability.
 
       # Step 2: Create tests with validation
       - name: "Create tests"
@@ -142,7 +166,14 @@ tasks:
         agent:
           use: coder
           with:
-            prompt: "Fix the root cause following best practices. Ensure the fix is minimal, targeted, and doesn't introduce new issues."
+            prompt: |
+              BUG REPORT: "{{ inputs.prompt }}"
+
+              Fix the root cause following best practices.
+              Ensure the fix is minimal, targeted, and doesn't introduce new issues.
+
+              Based on the debugger's root cause analysis, implement a complete fix that addresses
+              the underlying issue, not just the symptoms.
         # Uncomment and customize validation for your project:
         # validate:
         #   command: "make test"  # or: npm test, pytest, cargo test, etc.

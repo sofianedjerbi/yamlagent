@@ -25,36 +25,66 @@ tasks:
         - "**/*"
     steps:
       # Step 1: Create technical specification
-      - name: "Create technical specification"
+      - id: spec
+        name: "Create technical specification"
         agent:
           use: architect
           with:
             prompt: "Create technical specification for: {{ inputs.prompt }}"
 
       # Step 2: Write tests first based on spec (RED phase)
-      - name: "Write tests (RED phase)"
+      - id: tests
+        name: "Write tests (RED phase)"
         agent:
           use: tester
           with:
             prompt: "Create tests for the specified feature. Cover API contracts, data models, and core behavior."
+          context_from:
+            - spec  # Get architect's technical specification
 
       # Step 3: Implement to make tests pass (GREEN phase) with validation
-      - name: "Implement feature (GREEN phase)"
+      - id: implementation
+        name: "Implement feature (GREEN phase)"
         agent:
           use: coder
           with:
-            prompt: "Implement the feature following the technical specification. Make the tests pass."
+            prompt: |
+              ORIGINAL REQUEST: "{{ inputs.prompt }}"
+
+              Implement the COMPLETE feature from the technical specification provided above.
+              Every component, file, and interface mentioned in the spec must be fully implemented.
+
+              The technical specification is your source of truth - implement everything it describes.
+              Pay attention to the original user's intent and any priorities they emphasized.
+
+              Tests provide validation checkpoints to ensure correctness, but your goal is
+              to deliver the complete feature as specified, not just pass the tests.
+          context_from:
+            - spec   # Get technical specification
+            - tests  # Get test requirements
         validate:
           command: "None"
           max_retries: 3
           continue_on_failure: false
 
       # Step 4: Refactor with best practices (REFACTOR phase)
-      - name: "Refactor (REFACTOR phase)"
+      - id: refactored
+        name: "Refactor (REFACTOR phase)"
         agent:
           use: coder
           with:
-            prompt: "Refactor the implementation following SOLID, DRY principles. Keep functionality intact."
+            prompt: |
+              ORIGINAL REQUEST: "{{ inputs.prompt }}"
+
+              Refactor the implementation following SOLID, DRY principles while keeping functionality intact.
+
+              Ensure the refactored code still implements EVERYTHING from the technical specification.
+              Improve code quality, organization, and maintainability without removing any features.
+
+              The original specification is still your source of truth - nothing should be lost during refactoring.
+          context_from:
+            - spec            # Original spec for reference
+            - implementation  # Current implementation to refactor
         validate:
           command: "None"
           max_retries: 2
@@ -66,6 +96,9 @@ tasks:
           use: reviewer
           with:
             prompt: "Review the feature implementation. Check architecture, code quality, and whether tests cover key scenarios."
+          context_from:
+            - spec        # Original requirements
+            - refactored  # Final implementation
 
   # Quick: Implement -> Test -> Review with validation
   - id: code
@@ -80,7 +113,13 @@ tasks:
         agent:
           use: coder
           with:
-            prompt: "Implement following best practices: {{ inputs.prompt }}"
+            prompt: |
+              REQUEST: "{{ inputs.prompt }}"
+
+              Implement the complete feature following best practices (SOLID, DRY, clean code).
+              Make sure the implementation is thorough and addresses all aspects of the request.
+
+              Consider edge cases, error handling, and maintainability.
 
       # Step 2: Create tests with validation
       - name: "Create tests"
@@ -120,7 +159,14 @@ tasks:
         agent:
           use: coder
           with:
-            prompt: "Fix the root cause following best practices. Ensure the fix is minimal, targeted, and doesn't introduce new issues."
+            prompt: |
+              BUG REPORT: "{{ inputs.prompt }}"
+
+              Fix the root cause following best practices.
+              Ensure the fix is minimal, targeted, and doesn't introduce new issues.
+
+              Based on the debugger's root cause analysis, implement a complete fix that addresses
+              the underlying issue, not just the symptoms.
         validate:
           command: "None"
           max_retries: 2
