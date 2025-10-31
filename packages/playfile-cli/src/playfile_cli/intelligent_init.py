@@ -17,6 +17,9 @@ CUSTOMIZATION_AGENT = Agent(
     model="claude-sonnet-4-5-20250929",
     instructions="""You specialize in project documentation and configuration.
 
+CRITICAL: Follow ALL constraints in prompts exactly. If a prompt says "maximum 20 lines",
+you MUST count lines and stop at 20. Exceeding limits is a failure.
+
 Use the Write tool to create files directly. Do not output content in chat.""",
     tools=AgentToolsConfig(mode=ToolsMode.WHITELIST, commands=["Write", "Read", "Glob"]),
     limits=AgentLimits(runtime="5m", iterations=20),
@@ -113,20 +116,36 @@ Create these files using the Write tool:
 2. `.play/project/guidelines.md`:
    Header: "# Project Guidelines"
 
-   Keep EXTREMELY concise - bullet points only:
+   CRITICAL CONSTRAINT: MAXIMUM 20 LINES TOTAL (including header).
+   If you exceed 20 lines, you have FAILED.
+
+   Use ONLY bullet points. NO prose, NO examples, NO explanations.
 
    ## Code Organization
-   - Main directories and their purpose (1 line each, max 3-4 items)
+   - Main directories (1 line each, max 3 items)
 
    ## Key Patterns
-   - Core abstractions/patterns used (max 3-4 bullet points)
+   - Core abstractions (max 3 bullet points)
 
    ## Conventions
-   - Naming: how files/classes/functions are named
-   - Testing: where tests go, how to run
-   - Commands: install/test/build commands
+   - Naming: brief convention
+   - Testing: where and how
+   - Commands: install/test/build
 
-   CRITICAL: Maximum 20 lines total. Be extremely brief. No explanations or examples."""
+   Example of correct length (20 lines):
+   # Project Guidelines
+   ## Code Organization
+   - src/: main code
+   - tests/: test files
+   ## Key Patterns
+   - MVC architecture
+   - Dependency injection
+   ## Conventions
+   - Naming: snake_case for functions
+   - Testing: pytest in tests/
+   - Commands: uv run pytest
+
+   STOP AT 20 LINES. Count your lines before writing."""
 
     try:
         executor = AgentExecutor(tools=None, console=console)
