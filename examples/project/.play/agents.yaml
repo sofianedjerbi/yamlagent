@@ -51,3 +51,25 @@ agents:
     limits:
       runtime: "5m"
       iterations: 20
+
+  - id: architect
+    role: "Software Architect"
+    model: claude-sonnet-4-5-20250929
+    instructions: .play/agents/architect.md
+    tools:
+      mode: whitelist
+      commands: ["Read", "Glob", "Grep"]  # Exploration only, no code changes
+    limits:
+      runtime: "10m"
+      iterations: 25
+
+  - id: product-owner
+    role: "Product Owner / UAT Tester"
+    model: claude-sonnet-4-5-20250929
+    instructions: .play/agents/product-owner.md
+    tools:
+      mode: blacklist
+      commands: []  # Full access to run app and test features
+    limits:
+      runtime: "15m"
+      iterations: 30

@@ -89,10 +89,12 @@ class AgentStep:
 
     Attributes:
         agent: Agent invocation configuration
+        name: Optional human-readable step name
         validate: Optional validation and retry configuration
     """
 
     agent: AgentInvocation
+    name: str | None = None
     validate: StepValidation | None = None
 
     def __post_init__(self) -> None:

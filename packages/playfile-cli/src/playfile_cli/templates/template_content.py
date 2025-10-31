@@ -29,19 +29,22 @@ tasks:
         - "**/*"
     steps:
       # Step 1: Create technical specification
-      - agent:
+      - name: "Create technical specification"
+        agent:
           use: architect
           with:
             prompt: "Create technical specification for: {{ inputs.prompt }}"
 
       # Step 2: Write tests first based on spec (RED phase)
-      - agent:
+      - name: "Write tests (RED phase)"
+        agent:
           use: tester
           with:
             prompt: "Create tests for the specified feature. Cover API contracts, data models, and core behavior."
 
       # Step 3: Implement to make tests pass (GREEN phase) with validation
-      - agent:
+      - name: "Implement feature (GREEN phase)"
+        agent:
           use: coder
           with:
             prompt: "Implement the feature following the technical specification. Make the tests pass."
@@ -52,7 +55,8 @@ tasks:
         #   continue_on_failure: false
 
       # Step 4: Refactor with best practices (REFACTOR phase)
-      - agent:
+      - name: "Refactor (REFACTOR phase)"
+        agent:
           use: coder
           with:
             prompt: "Refactor the implementation following SOLID, DRY principles. Keep functionality intact."
@@ -63,7 +67,8 @@ tasks:
         #   continue_on_failure: false
 
       # Step 5: Review the complete implementation
-      - agent:
+      - name: "Review implementation"
+        agent:
           use: reviewer
           with:
             prompt: "Review the feature implementation. Check architecture, code quality, and whether tests cover key scenarios."
@@ -77,13 +82,15 @@ tasks:
         - "**/*"
     steps:
       # Step 1: Implement the feature with best practices
-      - agent:
+      - name: "Implement feature"
+        agent:
           use: coder
           with:
             prompt: "Implement following best practices: {{ inputs.prompt }}"
 
       # Step 2: Create tests with validation
-      - agent:
+      - name: "Create tests"
+        agent:
           use: tester
           with:
             prompt: "Create simple, efficient tests covering the implementation. Test happy path, edge cases, and errors."
@@ -94,7 +101,8 @@ tasks:
         #   continue_on_failure: false
 
       # Step 3: Review implementation and tests
-      - agent:
+      - name: "Review code"
+        agent:
           use: reviewer
           with:
             prompt: "Review the implementation and tests for quality and best practices."
@@ -108,13 +116,15 @@ tasks:
         - "**/*"
     steps:
       # Step 1: Find root cause (100% sure before fixing) - dedicated debugger
-      - agent:
+      - name: "Find root cause"
+        agent:
           use: debugger
           with:
             prompt: "Investigate and find the ROOT CAUSE of: {{ inputs.prompt }}"
 
       # Step 2: Fix the root cause with best practices and validation
-      - agent:
+      - name: "Fix bug"
+        agent:
           use: coder
           with:
             prompt: "Fix the root cause following best practices. Ensure the fix is minimal, targeted, and doesn't introduce new issues."
@@ -125,7 +135,8 @@ tasks:
         #   continue_on_failure: false
 
       # Step 3: Review the bugfix
-      - agent:
+      - name: "Review bugfix"
+        agent:
           use: reviewer
           with:
             prompt: "Review the bugfix: Does it address the root cause? Does it follow best practices? Any potential side effects?"

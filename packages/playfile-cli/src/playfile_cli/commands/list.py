@@ -82,14 +82,26 @@ def list_cmd(
                             if agent:
                                 agent_role = agent.role
 
-                        # Format agent display
+                        # Format step display: "1. Step Name - Agent Role (agent_id)"
+                        step_parts = [f"[cyan]{i}.[/cyan]"]
+
+                        # Add step name if present
+                        if step.name:
+                            step_parts.append(f"[bold]{step.name}[/bold]")
+
+                        # Add agent info
                         if agent_role:
                             agent_display = f"{agent_role} ({agent_id})"
                         else:
                             agent_display = agent_id
 
-                        # Step number with arrow
-                        console.print(f"    [cyan]{i}.[/cyan] {agent_display}")
+                        # If we have step name, add dash separator
+                        if step.name:
+                            step_parts.append("-")
+
+                        step_parts.append(agent_display)
+
+                        console.print(f"    {' '.join(step_parts)}")
 
                         # Show validation if present
                         if step.validate:
