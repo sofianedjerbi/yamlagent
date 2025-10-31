@@ -16,33 +16,41 @@ parts/
 sdist/
 var/
 wheels/
+pip-wheel-metadata/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
 # Virtual environments
-.venv/
 venv/
 ENV/
 env/
+.venv/
+.uv/
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-*.cover
-
-# IDE
+# IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-
-# OS
 .DS_Store
-Thumbs.db
 
-# uv
-.uv/
-uv.lock
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+
+# Distribution
+dist/
+build/

@@ -93,7 +93,7 @@ async def _generate_project_md(
     # Build prompt for file generation
     files_list = "\n".join(f"- {f}" for f in context.get("files", [])[:30])
 
-    prompt = f"""Create project documentation files analyzing this project.
+    prompt = f"""Create concise project documentation files analyzing this project.
 
 PROJECT CONTEXT:
 - Type: {context['project_type']}
@@ -107,18 +107,26 @@ FILES IN PROJECT:
 Create these files using the Write tool:
 
 1. `.play/project/overview.md`:
-   - Start with "# Project Overview" header
-   - Write 2-3 sentences describing what this project does and its purpose
-   - Keep it brief and high-level
+   Header: "# Project Overview"
+   Content: 2-3 sentences ONLY describing what this project does
 
 2. `.play/project/guidelines.md`:
-   - Start with "# Project Guidelines" header
-   - Include sections: Code Organization, Naming Conventions, Architecture Patterns,
-     Development Workflow, Best Practices
-   - Focus on actionable information for developers and AI agents
-   - Document actual patterns found in the codebase
+   Header: "# Project Guidelines"
 
-Use the Write tool to create both files."""
+   Keep EXTREMELY concise - bullet points only:
+
+   ## Code Organization
+   - Main directories and their purpose (1 line each, max 3-4 items)
+
+   ## Key Patterns
+   - Core abstractions/patterns used (max 3-4 bullet points)
+
+   ## Conventions
+   - Naming: how files/classes/functions are named
+   - Testing: where tests go, how to run
+   - Commands: install/test/build commands
+
+   CRITICAL: Maximum 20 lines total. Be extremely brief. No explanations or examples."""
 
     try:
         executor = AgentExecutor(tools=None, console=console)

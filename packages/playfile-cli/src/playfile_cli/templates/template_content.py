@@ -467,48 +467,17 @@ Run `pf init --intelligent` to auto-generate this based on your codebase.
 
 PROJECT_GUIDELINES = """# Project Guidelines
 
-Best practices, conventions, and patterns for this project.
-
 ## Code Organization
+- src/ - Main source code
+- tests/ - Test files
 
-- Standard directory structure and module organization
-- Where different types of code belong
+## Key Patterns
+- List main abstractions/patterns
 
-## Naming Conventions
+## Conventions
+- Naming: snake_case for files/functions
+- Testing: pytest in tests/ directory
+- Commands: (install/test/build commands here)
 
-- How to name files, classes, functions, variables
-- Consistent naming patterns across the codebase
-
-## Architecture Patterns
-
-- Key abstractions and design patterns used
-- How components interact with each other
-
-## Development Workflow
-
-```bash
-# Install dependencies
-# (command here)
-
-# Run tests
-# (command here)
-
-# Build
-# (command here)
-```
-
-## Best Practices
-
-- Code quality standards
-- Testing requirements
-- Documentation expectations
-
-## For AI Agents
-
-- Always explore existing code before adding new files
-- Follow established patterns and conventions
-- Reuse existing utilities and abstractions
-- Match the project's coding style
-
-Run `pf init --intelligent` to auto-generate detailed guidelines for your project.
+Run `pf init --intelligent` to auto-generate guidelines for your project.
 """

@@ -1,3 +1,3 @@
 # Project Overview
 
-I'll analyze the project files to understand what it does.This is a minimal Python project template that serves as a starter structure for new Python applications. It uses uv for fast package management and includes basic development tooling with pytest for testing and ruff for code formatting and linting. The template provides a clean foundation with standard project structure, configuration files, and development workflows ready to be customized for specific applications.
+This is a 3D Calculator web application built with Python and Flask, featuring a stunning glassmorphism 3D visual design with smooth animations and responsive layout. The application provides basic arithmetic operations (+, -, ×, ÷) and power operations (x²) through an intuitive web interface with full keyboard support, delivering a modern calculator experience that works seamlessly across all devices.
