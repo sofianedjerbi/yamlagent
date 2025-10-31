@@ -41,7 +41,7 @@ tools:
   commands:
     - id: git
       bin: git
-      args_allow: ["clone"]
+      args: ["clone"]
   mcp:
     - id: fs
       transport: stdio
@@ -105,7 +105,7 @@ tools:
   commands:
     - id: git
       bin: git
-      args_allow: ["clone", "push"]
+      args: ["clone", "push"]
   mcp:
     - id: fs
       transport: stdio
@@ -187,7 +187,7 @@ tools:
   commands:
     - id: npm
       bin: npm
-      args_allow: ["install", "run"]
+      args: ["install", "run"]
   mcp:
     - id: web
       transport: stdio

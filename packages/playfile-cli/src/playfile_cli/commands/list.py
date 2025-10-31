@@ -166,10 +166,11 @@ def list_cmd(
                     console.print(f"  [dim]Binary:[/dim] {cmd.bin}")
                     if cmd.timeout:
                         console.print(f"  [dim]Timeout:[/dim] {cmd.timeout}")
-                    if cmd.args_allow:
-                        console.print(f"  [dim]Allowed args:[/dim] {', '.join(cmd.args_allow[:5])}")
-                        if len(cmd.args_allow) > 5:
-                            console.print(f"    [dim]... and {len(cmd.args_allow) - 5} more[/dim]")
+                    if cmd.args:
+                        mode_label = "Allowed" if cmd.args_mode.value == "whitelist" else "Blocked"
+                        console.print(f"  [dim]{mode_label} args:[/dim] {', '.join(cmd.args[:5])}")
+                        if len(cmd.args) > 5:
+                            console.print(f"    [dim]... and {len(cmd.args) - 5} more[/dim]")
                     console.print()
 
             # MCP servers

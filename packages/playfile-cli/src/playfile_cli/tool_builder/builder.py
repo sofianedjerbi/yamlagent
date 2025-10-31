@@ -21,8 +21,9 @@ class ToolConfig:
 
     id: str
     bin: str
-    args_allow: list[str] | None
-    timeout: str
+    args: list[str] | None = None
+    args_mode: str = "whitelist"
+    timeout: str = "5m"
 
 
 class ToolBuilder:

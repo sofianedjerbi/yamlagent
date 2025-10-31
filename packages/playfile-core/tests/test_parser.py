@@ -31,19 +31,19 @@ class TestYAMLLoader:
 
 class TestCommandParser:
     def test_parse_valid_command(self):
-        data = {"id": "git", "bin": "git", "args_allow": ["clone"], "timeout": "5m"}
+        data = {"id": "git", "bin": "git", "args": ["clone"], "timeout": "5m"}
         parser = CommandParser()
         cmd = parser.parse(data)
         assert cmd.id == "git"
         assert cmd.bin == "git"
-        assert cmd.args_allow == ["clone"]
+        assert cmd.args == ["clone"]
         assert cmd.timeout == "5m"
 
     def test_parse_command_with_defaults(self):
         data = {"id": "npm", "bin": "npm"}
         parser = CommandParser()
         cmd = parser.parse(data)
-        assert cmd.args_allow == []
+        assert cmd.args == []
         assert cmd.timeout is None
 
     def test_parse_command_missing_id(self):
@@ -107,11 +107,11 @@ tools:
   commands:
     - id: git
       bin: git
-      args_allow: ["clone", "push"]
+      args: ["clone", "push"]
       timeout: "5m"
     - id: npm
       bin: npm
-      args_allow: ["ci", "run"]
+      args: ["ci", "run"]
       timeout: "20m"
   mcp:
     - id: fs

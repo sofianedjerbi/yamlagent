@@ -100,8 +100,9 @@ def create_tool(
             tool_config = ToolConfig(
                 id=tool_id,
                 bin=binary,
-                args_allow=args_list,
-                timeout=timeout,
+                args=args_list,
+                args_mode="whitelist",
+                timeout=timeout or "5m",
             )
 
             # Show what we're creating
@@ -185,7 +186,7 @@ def create_tool(
             table.add_column("Timeout")
 
             for tool in tool_configs:
-                args_display = ", ".join(tool.args_allow) if tool.args_allow else "[dim]all allowed[/dim]"
+                args_display = ", ".join(tool.args) if tool.args else "[dim]all allowed[/dim]"
                 table.add_row(
                     tool.id,
                     tool.bin,

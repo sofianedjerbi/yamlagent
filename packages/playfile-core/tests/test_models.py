@@ -7,15 +7,15 @@ from playfile_core.tools import AgentTools, Command, MCP
 
 class TestCommand:
     def test_command_creation(self):
-        cmd = Command(id="git", bin="git", args_allow=["clone", "push"], timeout="5m")
+        cmd = Command(id="git", bin="git", args=["clone", "push"], timeout="5m")
         assert cmd.id == "git"
         assert cmd.bin == "git"
-        assert cmd.args_allow == ["clone", "push"]
+        assert cmd.args == ["clone", "push"]
         assert cmd.timeout == "5m"
 
     def test_command_defaults(self):
         cmd = Command(id="npm", bin="npm")
-        assert cmd.args_allow == []
+        assert cmd.args == []
         assert cmd.timeout is None
 
     def test_command_empty_id(self):
