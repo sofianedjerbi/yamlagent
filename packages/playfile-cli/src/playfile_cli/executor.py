@@ -45,6 +45,7 @@ class AgentExecutor:
         working_dir: str = ".",
         files: list[str] | None = None,
         request_summary: bool = False,
+        next_agent_role: str | None = None,
     ) -> str | None:
         """Execute an agent with a prompt and optional file context.
 
@@ -119,26 +120,36 @@ class AgentExecutor:
             # Request summary if needed
             if request_summary and response_text:
                 self._console.print("\n[dim]Requesting summary from agent...[/dim]")
-                summary = await self._request_summary(client, agent)
+                summary = await self._request_summary(client, agent, next_agent_role)
                 return summary
 
             return response_text
 
-    async def _request_summary(self, client: ClaudeSDKClient, agent: Agent) -> str:
+    async def _request_summary(
+        self, client: ClaudeSDKClient, agent: Agent, next_agent_role: str | None = None
+    ) -> str:
         """Request a summary from the agent after task completion.
 
         Args:
             client: Active Claude SDK client
             agent: Agent that performed the work
+            next_agent_role: Role of the next agent in the workflow
 
         Returns:
             Summary text
         """
-        summary_prompt = (
-            "Create a concise summary (2-4 sentences) of the work you just completed. "
-            "Include: what was done, key decisions made, and any important context "
-            "for the next agent. Be specific and factual."
-        )
+        if next_agent_role:
+            summary_prompt = (
+                f"Create a concise summary (2-4 sentences) specifically for the next agent: {next_agent_role}. "
+                f"Include only the information they need to continue the work effectively. "
+                f"What decisions did you make? What files did you create/modify? What should they know?"
+            )
+        else:
+            summary_prompt = (
+                "Create a concise summary (2-4 sentences) of the work you just completed. "
+                "Include: what was done, key decisions made, and any important context "
+                "for the next agent. Be specific and factual."
+            )
 
         await client.query(summary_prompt)
 

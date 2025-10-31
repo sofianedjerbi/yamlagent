@@ -132,8 +132,19 @@ class TaskRunner:
             # Execute step with retry logic and capture artifact
             try:
                 has_more_steps = i < len(task.steps)
+
+                # Determine next agent's role if there are more steps
+                next_agent_role = None
+                if has_more_steps:
+                    next_step = task.steps[i]  # i is 1-indexed, so this gives us the next step
+                    next_agent_id = next_step.agent.use
+                    next_agent = self._config.agents.get_agent(next_agent_id)
+                    if next_agent:
+                        next_agent_role = next_agent.role
+
                 summary = self._execute_step_with_retry(
-                    step, agent, prompt, task.working_dir, files, request_summary=has_more_steps
+                    step, agent, prompt, task.working_dir, files,
+                    request_summary=has_more_steps, next_agent_role=next_agent_role
                 )
 
                 # Add artifact if we got a summary
@@ -165,6 +176,7 @@ class TaskRunner:
         working_dir: str,
         files: list[str] | None,
         request_summary: bool = False,
+        next_agent_role: str | None = None,
     ) -> str | None:
         """Execute a step with retry logic and validation.
 
@@ -175,6 +187,7 @@ class TaskRunner:
             working_dir: Working directory for execution
             files: List of files to provide
             request_summary: Whether to request a summary after execution
+            next_agent_role: Role of the next agent in the workflow
 
         Returns:
             Summary text if request_summary=True, otherwise None
@@ -218,7 +231,8 @@ class TaskRunner:
             try:
                 result = asyncio.run(
                     self._executor.execute(
-                        agent, retry_prompt, working_dir, files, request_summary=request_summary
+                        agent, retry_prompt, working_dir, files,
+                        request_summary=request_summary, next_agent_role=next_agent_role
                     )
                 )
                 # Response already printed by executor during streaming
