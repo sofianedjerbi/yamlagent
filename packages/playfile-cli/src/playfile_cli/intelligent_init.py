@@ -208,7 +208,7 @@ async def _query_claude_for_customization(
 
 
 def _validate_yaml_structure(yaml_content: str) -> bool:
-    """Validate that YAML has required structure.
+    """Validate that YAML has required structure and validation blocks are uncommented.
 
     Args:
         yaml_content: YAML content to validate
@@ -216,11 +216,24 @@ def _validate_yaml_structure(yaml_content: str) -> bool:
     Returns:
         True if valid
     """
-    return (
+    # Check basic structure
+    if not (
         yaml_content.startswith("version:")
         and "tasks:" in yaml_content
         and "imports:" in yaml_content
-    )
+    ):
+        return False
+
+    # Check that validation blocks are uncommented (not "# validate:")
+    # Count commented vs uncommented validate blocks
+    commented_validate = yaml_content.count("# validate:")
+    uncommented_validate = yaml_content.count("\n  validate:")  # Proper indentation
+
+    # If there are commented validate blocks but no uncommented ones, validation failed
+    if commented_validate > 0 and uncommented_validate == 0:
+        return False
+
+    return True
 
 
 def _show_detected_settings(console: Console, context: dict) -> None:
@@ -432,15 +445,41 @@ YAML SCHEMA (must follow exactly):
 - tasks: [list of task objects with id, description, working_dir, files, steps]
 - Each step has: agent (with use, with), optional validate (with post_command, max_retries)
 
-CUSTOMIZATION TASKS:
-1. UNCOMMENT validation blocks and set post_command to: {test_cmd}
-2. Keep max_retries as-is (2 or 3 depending on step)
-3. Update file patterns for {context['project_type']} if needed
-4. Maintain all structure and comments
+CRITICAL CUSTOMIZATION TASKS:
+1. UNCOMMENT ALL validation blocks (remove the # comment markers)
+2. Set post_command to: {test_cmd}
+3. Keep max_retries as-is (2 or 3 depending on step)
+4. Update file patterns for {context['project_type']} if needed
+5. Maintain all step names and structure
+
+EXAMPLE - Before:
+```yaml
+- name: "Create tests"
+  agent:
+    use: tester
+    with:
+      prompt: "..."
+  # validate:
+  #   post_command: "make test"
+  #   max_retries: 2
+```
+
+EXAMPLE - After (UNCOMMENTED):
+```yaml
+- name: "Create tests"
+  agent:
+    use: tester
+    with:
+      prompt: "..."
+  validate:
+    post_command: "{test_cmd}"
+    max_retries: 2
+```
 
 OUTPUT:
 Return ONLY complete YAML starting with "version: 1".
 NO markdown blocks, NO explanations.
+ALL validation blocks MUST be uncommented.
 """
 
 

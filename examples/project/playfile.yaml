@@ -7,8 +7,8 @@ imports:
 
 # Core TDD workflows - test, code, review cycle built-in
 #
-# NOTE: Validation commands are commented out by default.
-# Uncomment and customize the "validate" blocks to enable automatic testing:
+# NOTE: Validation commands are configured below.
+# Customize the "validate" blocks to enable automatic testing:
 #   - For Python: "pytest" or "python -m pytest"
 #   - For Node.js: "npm test" or "npm run test"
 #   - For Rust: "cargo test"
@@ -44,11 +44,10 @@ tasks:
           use: coder
           with:
             prompt: "Implement the feature following the technical specification. Make the tests pass."
-        # Uncomment and customize validation for your project:
-        # validate:
-        #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
-        #   max_retries: 3
-        #   continue_on_failure: false
+        validate:
+          post_command: "None"
+          max_retries: 3
+          continue_on_failure: false
 
       # Step 4: Refactor with best practices (REFACTOR phase)
       - name: "Refactor (REFACTOR phase)"
@@ -56,11 +55,10 @@ tasks:
           use: coder
           with:
             prompt: "Refactor the implementation following SOLID, DRY principles. Keep functionality intact."
-        # Uncomment and customize validation for your project:
-        # validate:
-        #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
-        #   max_retries: 2
-        #   continue_on_failure: false
+        validate:
+          post_command: "None"
+          max_retries: 2
+          continue_on_failure: false
 
       # Step 5: Review the complete implementation
       - name: "Review implementation"
@@ -90,11 +88,10 @@ tasks:
           use: tester
           with:
             prompt: "Create simple, efficient tests covering the implementation. Test happy path, edge cases, and errors."
-        # Uncomment and customize validation for your project:
-        # validate:
-        #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
-        #   max_retries: 2
-        #   continue_on_failure: false
+        validate:
+          post_command: "None"
+          max_retries: 2
+          continue_on_failure: false
 
       # Step 3: Review implementation and tests
       - name: "Review code"
@@ -124,11 +121,10 @@ tasks:
           use: coder
           with:
             prompt: "Fix the root cause following best practices. Ensure the fix is minimal, targeted, and doesn't introduce new issues."
-        # Uncomment and customize validation for your project:
-        # validate:
-        #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
-        #   max_retries: 2
-        #   continue_on_failure: false
+        validate:
+          post_command: "None"
+          max_retries: 2
+          continue_on_failure: false
 
       # Step 3: Review the bugfix
       - name: "Review bugfix"

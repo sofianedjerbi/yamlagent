@@ -1,3 +1,3 @@
 # Project Overview
 
-Calc3D is a modern 3D calculator web application built with Flask and Python. It provides an interactive web interface for performing mathematical calculations with real-time evaluation and error handling.
+This project is a workflow automation system using playfile.yaml to define TDD-based development tasks. It provides structured workflows for feature development, code implementation, and bug fixes through multi-step agent orchestration with architect, coder, tester, debugger, and reviewer agents.

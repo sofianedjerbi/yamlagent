@@ -1,17 +1,15 @@
 # Project Guidelines
 
 ## Code Organization
-- `src/calc3d/` - Main application package (Flask app, calculator logic, templates, static assets)
-- `tests/` - Test suite using pytest
-- `pyproject.toml` - Project configuration and dependencies
+- playfile.yaml: Main workflow definitions
+- .play/: Shared configuration (tools.yaml, agents.yaml)
 
 ## Key Patterns
-- Flask web framework with JSON API endpoints
-- Static Calculator class with operation mapping
-- Expression evaluation with input validation
-- Template-based rendering for UI
+- TDD workflow: RED (tests) -> GREEN (implement) -> REFACTOR
+- Multi-agent orchestration: architect -> tester -> coder -> reviewer
+- Validation gates with configurable retry logic
 
 ## Conventions
-- **Naming**: Snake_case for files/functions, PascalCase for classes
-- **Testing**: Tests in `tests/` directory, run with `uv run pytest`
-- **Commands**: Install: `uv sync`, Test: `uv run pytest`, Run: `uv run calc3d`
+- Naming: Task IDs use lowercase (feature, code, bugfix)
+- Testing: Post-command validation (commented by default)
+- Commands: Customize validate.post_command per project type
