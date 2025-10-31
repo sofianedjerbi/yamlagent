@@ -164,3 +164,78 @@ class TestCalculator:
         result = Calculator.calculate(1, 3, "/")
         # Result should be rounded, not infinite decimals
         assert len(str(result).split('.')[-1]) <= 10
+
+    # ============ Additional Edge Cases ============
+
+    def test_power_of_zero(self):
+        """Test zero raised to a power."""
+        assert Calculator.calculate(0, 5, "**") == 0
+        assert Calculator.calculate(0, 0, "**") == 1  # 0^0 = 1 by convention
+
+    def test_multiply_by_one(self):
+        """Test multiplication identity."""
+        assert Calculator.calculate(42, 1, "*") == 42
+        assert Calculator.calculate(1, 42, "*") == 42
+
+    def test_divide_by_one(self):
+        """Test division by one."""
+        assert Calculator.calculate(42, 1, "/") == 42
+
+    def test_consecutive_operations_different_signs(self):
+        """Test subtraction with negative result."""
+        result = Calculator.calculate(3, 5, "-")
+        assert result == -2
+
+    def test_evaluate_expression_order_of_operations(self):
+        """Test proper order of operations."""
+        result = Calculator.evaluate_expression("10 - 2 * 3")
+        assert result == 4  # Should be 10 - 6, not 8 * 3
+
+    def test_evaluate_expression_division_precedence(self):
+        """Test division precedence."""
+        result = Calculator.evaluate_expression("20 / 4 / 2")
+        assert result == 2.5  # Should be (20 / 4) / 2 = 5 / 2
+
+    def test_evaluate_multiple_parentheses_groups(self):
+        """Test multiple separate parentheses groups."""
+        result = Calculator.evaluate_expression("(2 + 3) + (4 * 5)")
+        assert result == 25
+
+    def test_evaluate_expression_negative_in_parentheses(self):
+        """Test negative numbers in parentheses."""
+        result = Calculator.evaluate_expression("(-5) + 10")
+        assert result == 5
+
+    # ============ Additional Error Cases ============
+
+    def test_evaluate_unmatched_opening_parenthesis(self):
+        """Test unmatched opening parenthesis."""
+        result = Calculator.evaluate_expression("(2 + 3")
+        assert isinstance(result, str) and "Error" in result
+
+    def test_evaluate_unmatched_closing_parenthesis(self):
+        """Test unmatched closing parenthesis."""
+        result = Calculator.evaluate_expression("2 + 3)")
+        assert isinstance(result, str) and "Error" in result
+
+    def test_evaluate_double_operators(self):
+        """Test consecutive operators (++ is valid as unary plus)."""
+        # Note: Python eval treats ++ as two unary plus operators, which is valid
+        result = Calculator.evaluate_expression("2 ++ 3")
+        assert result == 5  # 2 + (+3) = 5
+
+    def test_evaluate_trailing_operator(self):
+        """Test expression ending with operator."""
+        result = Calculator.evaluate_expression("2 + 3 *")
+        assert isinstance(result, str) and "Error" in result
+
+    def test_evaluate_leading_operator_multiplication(self):
+        """Test expression starting with multiplication operator."""
+        result = Calculator.evaluate_expression("* 2 + 3")
+        assert isinstance(result, str) and "Error" in result
+
+    def test_calculate_exception_handling(self):
+        """Test that unexpected errors are caught."""
+        result = Calculator.calculate(float('inf'), 2, "*")
+        # Should return inf, not an error
+        assert result == float('inf')

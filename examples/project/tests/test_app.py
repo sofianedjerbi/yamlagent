@@ -223,3 +223,72 @@ class TestFlaskApp:
         assert 'result' in data
         assert isinstance(data['result'], str)
         assert 'Invalid' in data['result']
+
+    # ============ Additional Edge Cases ============
+
+    def test_calculate_very_long_expression(self, client):
+        """Test handling of very long expression."""
+        long_expr = " + ".join(["1"] * 100)
+        response = client.post(
+            '/calculate',
+            data=json.dumps({'expression': long_expr}),
+            content_type='application/json'
+        )
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data['result'] == 100
+
+    def test_calculate_nested_operations(self, client):
+        """Test deeply nested operations."""
+        response = client.post(
+            '/calculate',
+            data=json.dumps({'expression': '((((1 + 1) * 2) + 3) * 2)'}),
+            content_type='application/json'
+        )
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data['result'] == 14
+
+    def test_calculate_with_whitespace_expression(self, client):
+        """Test whitespace-only expression field."""
+        response = client.post(
+            '/calculate',
+            data=json.dumps({'expression': '   '}),
+            content_type='application/json'
+        )
+        assert response.status_code == 400
+        data = json.loads(response.data)
+        assert 'error' in data
+
+    def test_calculate_with_zero_result(self, client):
+        """Test calculation resulting in zero."""
+        response = client.post(
+            '/calculate',
+            data=json.dumps({'expression': '5 - 5'}),
+            content_type='application/json'
+        )
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data['result'] == 0
+
+    def test_calculate_with_negative_result(self, client):
+        """Test calculation resulting in negative number."""
+        response = client.post(
+            '/calculate',
+            data=json.dumps({'expression': '10 - 20'}),
+            content_type='application/json'
+        )
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data['result'] == -10
+
+    def test_calculate_extra_json_fields(self, client):
+        """Test request with extra JSON fields."""
+        response = client.post(
+            '/calculate',
+            data=json.dumps({'expression': '2 + 2', 'extra': 'ignored'}),
+            content_type='application/json'
+        )
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data['result'] == 4
