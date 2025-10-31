@@ -30,7 +30,14 @@ SETUP_AGENT = Agent(
     id="project-setup",
     role="Project Setup Specialist",
     model="claude-sonnet-4-5-20250929",
-    instructions="Setup clean, minimal project with essential files and best practices.",
+    instructions="""Create clean, minimal, working projects following official conventions.
+
+CRITICAL:
+- Research standard project structure for the language/framework
+- Package names must match directory structure
+- Include all required config files (build, deps, etc.)
+- Project MUST build/install successfully
+- Keep it simple and production-ready""",
     tools=AgentToolsConfig(mode=ToolsMode.BLACKLIST, commands=[]),
     limits=AgentLimits(runtime="5m", iterations=30),
 )

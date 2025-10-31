@@ -32,13 +32,13 @@ tasks:
       - agent:
           use: architect
           with:
-            prompt: "Create detailed technical specification for: {{ inputs.prompt }}. Define components, data models, APIs, and integration points."
+            prompt: "Create technical specification for: {{ inputs.prompt }}"
 
       # Step 2: Write tests first based on spec (RED phase)
       - agent:
           use: tester
           with:
-            prompt: "Create tests based on the technical specification above. Focus on API contracts, data models, and core behavior."
+            prompt: "Create tests for the specified feature. Cover API contracts, data models, and core behavior."
 
       # Step 3: Implement to make tests pass (GREEN phase) with validation
       - agent:
@@ -55,7 +55,7 @@ tasks:
       - agent:
           use: coder
           with:
-            prompt: "Refactor the implementation following SOLID, DRY principles. Ensure all tests still pass."
+            prompt: "Refactor the implementation following SOLID, DRY principles. Keep functionality intact."
         # Uncomment and customize validation for your project:
         # validate:
         #   post_command: "make test"  # or: npm test, pytest, cargo test, etc.
@@ -66,7 +66,7 @@ tasks:
       - agent:
           use: reviewer
           with:
-            prompt: "Review the feature implementation against the technical spec. Check architecture, quality, and test coverage."
+            prompt: "Review the feature implementation. Check architecture, code quality, and whether tests cover key scenarios."
 
   # Quick: Implement -> Test -> Review with validation
   - id: code
@@ -97,7 +97,7 @@ tasks:
       - agent:
           use: reviewer
           with:
-            prompt: "Review the implementation and tests for quality, best practices, and coverage."
+            prompt: "Review the implementation and tests for quality and best practices."
 
   # Bug Fix Workflow: Root cause -> Fix -> Validate -> Review
   - id: bugfix
@@ -128,7 +128,7 @@ tasks:
       - agent:
           use: reviewer
           with:
-            prompt: "Review the bugfix: Is it addressing the root cause? Does it follow best practices? Are there any side effects?"
+            prompt: "Review the bugfix: Does it address the root cause? Does it follow best practices? Any potential side effects?"
 """
 
 # Tools configuration template
@@ -324,53 +324,6 @@ You provide constructive code reviews focused on correctness, security, and inte
 - **Minor**: Style, optimization (nice to have)
 
 Be specific, explain why, provide examples when helpful.
-"""
-
-DOCUMENTER_INSTRUCTIONS = """# Documentation Writer Agent
-
-You are a skilled technical writer who creates clear, comprehensive, and user-friendly documentation for any type of software project.
-
-## Your responsibilities:
-- Write clear and concise documentation
-- Create helpful README files
-- Document APIs and interfaces
-- Write inline code comments where needed
-- Update existing documentation
-- Create usage examples
-
-## Documentation types:
-- **README.md**: Project overview, setup, usage
-- **API Documentation**: Function/method signatures, parameters, return values
-- **Inline Comments**: Complex logic explanations
-- **Code Documentation**: Function/class/module descriptions
-- **Examples**: Code snippets showing usage
-- **Guides**: Step-by-step tutorials
-
-## Guidelines:
-- **Clarity**: Use simple, direct language
-- **Structure**: Organize with clear headings
-- **Examples**: Show, don't just tell
-- **Completeness**: Cover all important aspects
-- **Accuracy**: Ensure documentation matches code
-- **Formatting**: Use proper markdown syntax
-
-## README structure:
-1. Project title and description
-2. Features
-3. Installation/setup instructions
-4. Usage examples
-5. API reference (if applicable)
-6. Configuration
-7. Contributing guidelines
-8. License
-
-## When documenting:
-1. **Explore first**: Read code to understand what needs documentation
-2. **Start with the big picture**: What does this project do?
-3. **Explain the "why"**: Not just what it does, but why
-4. **Include practical examples**: Real usage scenarios
-5. **Keep it up-to-date**: Check if docs match current code
-6. **Consider the audience**: Beginners or experts?
 """
 
 DEBUGGER_INSTRUCTIONS = """# Debugging Specialist Agent
