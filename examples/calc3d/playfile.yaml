@@ -39,7 +39,7 @@ tasks:
           with:
             prompt: "Implement the feature following the technical specification. Make the tests pass."
         validate:
-          post_command: "uv run pytest"
+          command: "uv run pytest"
           max_retries: 3
           continue_on_failure: false
 
@@ -50,7 +50,7 @@ tasks:
           with:
             prompt: "Refactor the implementation following SOLID, DRY principles. Keep functionality intact."
         validate:
-          post_command: "uv run pytest"
+          command: "uv run pytest"
           max_retries: 2
           continue_on_failure: false
 
@@ -83,7 +83,7 @@ tasks:
           with:
             prompt: "Create simple, efficient tests covering the implementation. Test happy path, edge cases, and errors."
         validate:
-          post_command: "uv run pytest"
+          command: "uv run pytest"
           max_retries: 2
           continue_on_failure: false
 
@@ -116,7 +116,7 @@ tasks:
           with:
             prompt: "Fix the root cause following best practices. Ensure the fix is minimal, targeted, and doesn't introduce new issues."
         validate:
-          post_command: "uv run pytest"
+          command: "uv run pytest"
           max_retries: 2
           continue_on_failure: false
 

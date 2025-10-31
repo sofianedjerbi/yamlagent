@@ -6,13 +6,15 @@ tools:
     # Version control
     - id: git
       bin: git
-      args_allow: ["status", "diff", "log", "add", "commit", "branch", "checkout"]
+      args: ["status", "diff", "log", "add", "commit", "branch", "checkout"]
+      args_mode: whitelist
       timeout: "2m"
 
     # Build/task runner
     - id: make
       bin: make
-      args_allow: ["build", "test", "clean", "install"]
+      args: ["build", "test", "clean", "install"]
+      args_mode: whitelist
       timeout: "10m"
 
     # File utilities
@@ -22,17 +24,20 @@ tools:
 
     - id: ls
       bin: ls
-      args_allow: ["-la", "-l", "-a", "-lh"]
+      args: ["-la", "-l", "-a", "-lh"]
+      args_mode: whitelist
       timeout: "10s"
 
     - id: find
       bin: find
-      args_allow: [".", "-name", "-type", "-maxdepth"]
+      args: [".", "-name", "-type", "-maxdepth"]
+      args_mode: whitelist
       timeout: "30s"
 
     - id: grep
       bin: grep
-      args_allow: ["-r", "-i", "-n", "-l"]
+      args: ["-r", "-i", "-n", "-l"]
+      args_mode: whitelist
       timeout: "30s"
 
   # Add language-specific tools as needed (python, node, cargo, go, mvn, etc.)
