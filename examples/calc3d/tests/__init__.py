@@ -1,1 +1,1 @@
-"""Test suite for calculator-3d."""
+"""Test suite for Calc3D application."""

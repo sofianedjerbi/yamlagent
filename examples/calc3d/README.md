@@ -1,116 +1,120 @@
-# 🧮 3D Calculator
+# Calc3D Example
 
-A beautiful 3D calculator web application built with Python and Flask.
+A Flask-based calculator application built using Playfile's TDD workflow.
 
-## 📋 Project Structure
+This example demonstrates how Playfile orchestrates multiple AI agents to build a complete feature from specification to implementation.
+
+## What This Shows
+
+**Complete TDD workflow in action:**
+1. Software Architect creates technical specification
+2. Test Engineer writes comprehensive tests
+3. Software Developer implements the complete feature
+4. Developer refactors following SOLID principles
+5. Code Reviewer validates quality
+
+**Context passing:**
+Each agent gets exactly what they need. The coder sees both the architect's spec AND the test requirements, ensuring complete implementation.
+
+**Validation checkpoints:**
+Tests run automatically after implementation and refactoring, catching issues early.
+
+## Project Structure
 
 ```
-calculator-3d/
-├── src/
-│   └── calculator_3d/
-│       ├── __init__.py
-│       ├── main.py                 # Flask application entry point
-│       ├── static/
-│       │   ├── css/                # CSS stylesheets for 3D effects
-│       │   └── js/                 # JavaScript for calculator logic
-│       └── templates/              # HTML templates
-├── tests/
-│   └── __init__.py
-├── pyproject.toml                  # Project configuration and dependencies
-├── README.md
-└── .gitignore
+calc3d/
+├── src/calc3d/
+│   ├── api/                    # API routes and validators
+│   ├── services/               # Business logic
+│   ├── repositories/           # Data access layer
+│   ├── models.py               # Data models
+│   ├── constants.py            # Application constants
+│   ├── app.py                  # Flask application factory
+│   ├── templates/              # HTML templates
+│   └── static/                 # CSS and JavaScript
+├── tests/                      # Comprehensive test suite
+├── playfile.yaml               # Workflow definitions
+└── .play/                      # Agent and tool configurations
 ```
 
-## 🚀 Quick Start
+## Try It Out
 
-### Prerequisites
-
-- Python 3.11 or higher
-- [uv](https://github.com/astral-sh/uv) package manager
-
-### Installation
-
-1. **Install uv** (if not already installed):
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-2. **Clone or navigate to the project directory**:
-```bash
-cd calculator-3d
-```
-
-3. **Install dependencies with uv**:
-```bash
+# Install dependencies
 uv sync
-```
 
-This will create a virtual environment and install all dependencies.
+# Run the development server
+python run.py
 
-### Running the Application
-
-#### Option 1: Using the installed command
-```bash
-uv run calculator-3d
-```
-
-#### Option 2: Running directly
-```bash
-uv run python -m calculator_3d.main
-```
-
-#### Option 3: Using the module directly
-```bash
-uv run python src/calculator_3d/main.py
-```
-
-The application will start on `http://localhost:5000`
-
-## 🛠️ Development
-
-### Install development dependencies
-```bash
-uv sync --extra dev
-```
-
-### Running tests
-```bash
+# Run tests
 uv run pytest
+
+# Build a feature with Playfile
+pf run feature --prompt "Add calculation history"
 ```
 
-### Code formatting
-```bash
-uv run black src/ tests/
-```
+## The Workflow
 
-### Code linting
-```bash
-uv run ruff check src/ tests/
-```
+When you run `pf run feature`, here's what happens:
 
-## 📦 Building
+**Step 1: Architect designs**
+Creates a detailed technical specification covering data models, API endpoints, file structure, and integration points.
 
-To build the package:
-```bash
-uv build
-```
+**Step 2: Tester writes tests**
+Receives the architect's spec and writes tests for all specified functionality.
 
-## 🎯 Next Steps
+**Step 3: Coder implements**
+Gets both the spec and the tests. Implements EVERYTHING from the specification, not just what makes tests pass.
 
-The project structure is ready! You can now:
+**Step 4: Refactor**
+Improves code quality while keeping all functionality intact. Tests verify nothing breaks.
 
-1. **Create HTML templates** in `src/calculator_3d/templates/`
-   - Design the calculator interface with 3D elements
+**Step 5: Review**
+Final quality check for architecture, patterns, and test coverage.
 
-2. **Add CSS** in `src/calculator_3d/static/css/`
-   - Implement 3D styling with CSS transforms and animations
+## Key Features
 
-3. **Add JavaScript** in `src/calculator_3d/static/js/`
-   - Implement calculator logic and 3D interactions
+**Backend:**
+- RESTful API with Flask
+- Clean architecture (services, repositories, models)
+- Comprehensive error handling
+- Input validation
+- CORS support
 
-4. **Add API routes** in `src/calculator_3d/main.py`
-   - Create endpoints for calculator operations if needed
+**Frontend:**
+- Responsive calculator interface
+- Real-time calculations
+- Error display
+- Clean, modern UI
 
-## 📝 License
+**Testing:**
+- API endpoint tests
+- Service layer tests
+- Model validation tests
+- Error handling tests
+- 100% coverage of core functionality
 
-This project is open source and available under the MIT License.
+## What Makes This Different
+
+Most AI coding tools would give you either a backend OR frontend, maybe skip validation, probably forget error handling.
+
+With Playfile's multi-agent workflow:
+- The architect ensures nothing is forgotten
+- The tester validates all paths
+- The coder implements the complete spec
+- The reviewer catches quality issues
+
+You get a complete, production-ready implementation.
+
+## Built With
+
+- **Flask** for the web framework
+- **pytest** for testing
+- **uv** for dependency management
+- **Playfile** for AI-orchestrated development
+
+## Learn More
+
+This example uses the default TDD workflow from `pf init`. You can customize every step, add new agents, change the workflow, or create entirely new processes.
+
+Check the `playfile.yaml` to see the complete workflow definition.

@@ -7,7 +7,7 @@ imports:
 
 # Core TDD workflows - test, code, review cycle built-in
 #
-# Validation commands are enabled for automatic testing with: uv run pytest
+# Validation commands are enabled with "uv run pytest" for this Python project.
 #
 tasks:
   # Feature Workflow: Architect -> TDD with validation

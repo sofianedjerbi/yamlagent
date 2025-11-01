@@ -1,41 +1,38 @@
 [project]
-name = "calculator-3d"
+name = "calc3d"
 version = "0.1.0"
 description = "A beautiful 3D calculator web application"
 readme = "README.md"
+authors = [
+    { name = "Sofiane Djerbi", email = "sofiane.djerbi38@gmail.com" }
+]
 requires-python = ">=3.11"
 dependencies = [
-    "flask>=3.0.0",
-    "flask-cors>=4.0.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "jinja2>=3.1.4",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.4.0",
+    "pytest>=8.0.0",
     "pytest-cov>=4.1.0",
-    "black>=23.0.0",
-    "ruff>=0.1.0",
+    "httpx>=0.27.0",  # Required for TestClient
 ]
 
 [project.scripts]
-calculator-3d = "calculator_3d.main:main"
+calc3d = "calc3d:main"
+
+[tool.uv]
+package = true
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "httpx>=0.27.0",
+]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/calculator_3d"]
-
-[tool.black]
-line-length = 88
-target-version = ['py311']
-
-[tool.ruff]
-line-length = 88
-target-version = "py311"
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = "test_*.py"
-python_functions = "test_*"

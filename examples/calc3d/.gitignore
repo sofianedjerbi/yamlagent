@@ -16,21 +16,19 @@ parts/
 sdist/
 var/
 wheels/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
 # Virtual environments
-.env
-.venv
-env/
 venv/
+env/
 ENV/
-env.bak/
-venv.bak/
+.venv
+
+# uv
 .uv/
+uv.lock
 
 # IDEs
 .vscode/
@@ -38,28 +36,16 @@ venv.bak/
 *.swp
 *.swo
 *~
+
+# OS
 .DS_Store
+Thumbs.db
 
 # Testing
 .pytest_cache/
 .coverage
 htmlcov/
-.tox/
-.hypothesis/
 
-# Flask
-instance/
-.webassets-cache
-
-# Environment variables
+# Environment
 .env
 .env.local
-.env.*.local
-
-# Logs
-*.log
-
-# Distribution / packaging
-*.egg-info/
-dist/
-build/
