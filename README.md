@@ -1,103 +1,88 @@
 # Playfile
 
-**Your AI development team, orchestrated in YAML.**
+**Build complete features with AI teams that actually work together.**
 
-Stop wrestling with single AI agents that forget context or miss requirements. Playfile lets you build workflows where specialized AI agents work together, each one focused on what it does best.
+Define your development workflow once in YAML. Get specialized AI agents that collaborate like a real team—passing context, validating work, and delivering complete implementations.
 
-## The Problem
+## Why Playfile?
 
-You ask an AI to build a feature. It writes backend code. Tests pass. Ship it!
+AI coding assistants are powerful, but they work alone. One agent tries to be architect, coder, tester, and reviewer all at once. Context gets lost. Requirements get missed. You spend hours prompting for the pieces that were forgotten.
 
-Then you realize: the frontend is just a placeholder. The AI focused on passing the tests and called it done.
+**Playfile orchestrates specialized AI agents into workflows.** Each agent has one job. Each agent gets exactly the context it needs. Together, they deliver what a single agent can't: complete, tested, production-ready features.
 
-Sound familiar?
-
-## The Solution
-
-Playfile gives you **workflows, not just agents**. An architect designs the complete system. A tester writes comprehensive tests. A coder implements everything from the spec. A reviewer checks the work.
-
-Each agent gets exactly the context it needs. Each one has a clear job. Together, they deliver complete features.
-
-```yaml
-tasks:
-  - id: feature
-    description: "Full feature development with TDD"
-    steps:
-      - id: spec
-        name: "Create technical specification"
-        agent:
-          use: architect
-
-      - id: tests
-        name: "Write tests first"
-        agent:
-          use: tester
-          context_from:
-            - spec
-
-      - id: implementation
-        name: "Implement complete feature"
-        agent:
-          use: coder
-          context_from:
-            - spec
-            - tests
-        validate:
-          command: "pytest"
+```bash
+pip install playfile
+pf init
+pf run feature --prompt "Add user authentication"
 ```
 
-The coder gets both the architect's vision AND the test requirements. It implements the complete spec, not just what makes tests green.
+Watch your AI team spec, test, implement, and review a complete feature—without the back-and-forth.
 
 ## How It Works
 
-**1. Define your agents**
-
-Agents are AI assistants with specific expertise. A security auditor. A performance optimizer. An API designer. Whatever your team needs.
-
+**1. Define specialized agents**
 ```yaml
 agents:
   - id: architect
     role: "Software Architect"
     model: "claude-sonnet-4"
     instructions: ".play/agents/architect.md"
+
+  - id: coder
+    role: "Senior Developer"
+    model: "claude-sonnet-4"
 ```
 
-**2. Build workflows**
+**2. Build multi-agent workflows**
+```yaml
+tasks:
+  - id: feature
+    description: "Full feature development with TDD"
+    steps:
+      - id: spec
+        agent: { use: architect }
 
-Chain agents together. Pass context between steps. Add validation checkpoints. Create reproducible development processes.
+      - id: tests
+        agent:
+          use: tester
+          context_from: [spec]  # Tester sees the spec
 
-The original user request flows through every step, so priorities never get lost.
+      - id: implementation
+        agent:
+          use: coder
+          context_from: [spec, tests]  # Coder sees both
+        validate:
+          command: "pytest"  # Must pass before continuing
+```
 
-**3. Let them work**
-
-Run your workflow. Watch specialized agents collaborate. Get complete implementations that match your vision.
-
+**3. Run and watch them collaborate**
 ```bash
-pf run feature --prompt "Build a 3D calculator with sound effects"
+pf run feature --prompt "Add rate limiting to the API"
 ```
 
-The architect specs out the complete system (backend, frontend, 3D rendering, audio). The tester writes comprehensive tests. The coder implements everything. The reviewer validates quality.
+The architect designs the complete solution. The tester writes comprehensive tests. The coder implements against both spec and tests. The reviewer validates the work. Each agent has clear context and a single responsibility.
 
-No missing pieces. No surprises.
+## What You Get
 
-## Built For Real Development
+**Complete implementations, not fragments**
+Stop getting half-finished code. Multi-agent workflows ensure every part of the feature gets built—frontend, backend, tests, docs.
 
-**TDD workflows out of the box**
-Red, green, refactor. With AI agents that understand the full cycle.
+**Reproducible workflows**
+Define your process once. Run it anytime. Same workflow, same quality, every time.
 
-**Smart context passing**
-Control exactly what context each agent sees. No information overload. No missing requirements.
+**Smart context control**
+Each agent sees exactly what it needs. Specs flow to testers. Tests flow to coders. No information overload, no missing requirements.
 
-**Validation at every step**
-Run tests after implementation. Check for file existence. Verify builds. Catch issues early.
+**Built-in validation**
+Tests must pass. Files must exist. Builds must succeed. Catch issues before they compound.
 
 **Works with your stack**
-Python? Node? Rust? Go? Mix them all. Playfile doesn't care about your tech choices.
+Language-agnostic. Python, TypeScript, Go, Rust—use any stack. Playfile orchestrates the workflow, not the code.
 
-**Project aware**
-Agents explore your codebase first. They learn your patterns, your structure, your conventions.
+**Pre-built workflows**
+TDD, bug fixes, quick iterations, code review pipelines. Start with smart defaults or build your own.
 
-## Get Started
+## Quick Start
 
 ```bash
 # Install
@@ -110,101 +95,79 @@ pf init
 pf run feature --prompt "Add user authentication"
 ```
 
-Three commands. Complete features.
+## Example: Building a REST API
 
-## What You Can Build
+**The prompt:**
+```bash
+pf run feature --prompt "Add REST API with auth, rate limiting, and OpenAPI docs"
+```
 
-**Development workflows**
-Spec → Test → Implement → Refactor → Review
+**What happens:**
+1. **Architect** designs the complete system (endpoints, auth flow, rate limit strategy, OpenAPI spec)
+2. **Tester** writes tests for auth, rate limiting, all endpoints, and error cases
+3. **Coder** implements everything against the spec and tests
+4. **Refactorer** cleans up code quality and structure
+5. **Reviewer** validates completeness and best practices
 
-**Bug fixes**
-Debug → Root cause → Fix → Validate → Review
+**The result:**
+Complete API with authentication, rate limiting, comprehensive tests, and OpenAPI documentation. Not just the happy path—error handling, edge cases, the whole system.
 
-**Quick iterations**
-Implement → Test → Ship
-
-**Custom pipelines**
-Security audits. Performance optimization. Documentation generation. API design. Whatever your process needs.
-
-## Why Playfile
-
-**Reproducible**
-Same workflow, same results. Every time.
-
-**Transparent**
-See what each agent does. Understand every decision.
-
-**Controllable**
-You define the process. Agents follow it.
-
-**Complete**
-No more "I forgot the frontend" moments.
-
-**Flexible**
-One agent or ten. Simple tasks or complex pipelines. Your choice.
-
-## Real Example
-
-You need a REST API with authentication, rate limiting, and documentation.
-
-**Without Playfile:**
-Ask an AI. Get code. Realize it's missing rate limiting. Ask again. Get different code. Lose the auth implementation. Start over.
-
-**With Playfile:**
-1. Architect specs the complete system
-2. Tester writes tests for auth, rate limits, endpoints
-3. Coder implements everything from spec
-4. Refactorer cleans up the code
-5. Reviewer validates quality
-
-One run. Complete implementation. Nothing missing.
-
-## Smart Defaults
-
-Initialize a project and get:
-- TDD workflow (architect → test → implement → refactor → review)
-- Quick coding workflow (implement → test → review)
-- Bug fix workflow (debug → fix → validate → review)
-- Specialized agents (coder, tester, architect, debugger, reviewer)
-- Tool configurations (git, language tools, file utilities)
-
-Customize everything or use as is. Your project, your rules.
+One prompt. One run. Complete feature.
 
 ## See It In Action
 
-Check out `examples/calc3d` for a complete Flask calculator app built with Playfile's TDD workflow.
+Check out `examples/calc3d`—a Flask calculator app with 3D rendering, built entirely by Playfile's TDD workflow.
 
-The example shows:
-- Five agent collaboration (architect, tester, coder, refactorer, reviewer)
-- Context passing between workflow steps
-- Automatic test validation
-- Clean architecture implementation
-- Complete frontend and backend
-
-Run it yourself:
 ```bash
 cd examples/calc3d
-uv sync
-python run.py
+pf run feature --prompt "Add calculation history with undo"
 ```
 
-Or build a new feature:
+Watch how the architect, tester, coder, refactorer, and reviewer collaborate to build a complete, tested feature.
+
+## Built-In Workflows
+
+Run `pf init` and get production-ready workflows:
+
+**Full TDD cycle**
+`pf run feature` → Architect → Tester → Coder → Refactorer → Reviewer
+
+**Quick iterations**
+`pf run quick` → Coder → Tester → Reviewer
+
+**Bug fixes**
+`pf run fix` → Debugger → Fix → Validate → Review
+
+Plus specialized agents and tool configurations. Use as-is or customize to match your process.
+
+## Use Cases
+
+**Feature development**: Build complete features with tests, docs, and review
+**Bug fixes**: Debug, fix, validate, and review with specialized agents
+**Code refactoring**: Improve code quality with dedicated refactoring workflows
+**API design**: Architect, implement, test, and document APIs end-to-end
+**Security audits**: Run security-focused agents on your codebase
+**Custom pipelines**: Build any workflow your team needs
+
+## Why Teams Choose Playfile
+
+**No more incomplete features**: Every workflow ensures completeness
+**Consistent quality**: Same process, same standards, every time
+**Clear accountability**: Know exactly which agent did what
+**Faster iterations**: No back-and-forth prompting for missing pieces
+**Easy onboarding**: New team members run the same proven workflows
+
+## Get Started Now
+
 ```bash
-pf run feature --prompt "Add calculation history"
-```
-
-Watch how agents work together to deliver a complete, tested implementation.
-
-## Beyond Single Agents
-
-Single AI agents are powerful. Teams of specialized agents working together? That's transformative.
-
-Stop asking one agent to do everything. Build workflows where each agent excels at their specific role.
-
-Welcome to development orchestration.
-
-```bash
+pip install playfile
 pf init
 ```
 
-Let's build something complete.
+Stop wrestling with single AI agents. Start building with AI teams.
+
+---
+
+**Questions? Issues?** [GitHub Issues](https://github.com/sofianedjerbi/playfile/issues)
+**Documentation:** Coming soon
+**License:** MIT
