@@ -83,11 +83,12 @@ class AgentExecutor:
 
                     for block in message.content:
                         if isinstance(block, TextBlock):
-                            # Show context indicator before text
-                            ctx = self._context_indicator.get_indicator()
-                            if ctx and response_text == "":
+                            # Show agent badge and context indicator before text
+                            if response_text == "":
                                 # Only show at start of response
-                                self._console.print(f"{ctx} ", end="")
+                                agent_badge = f"[cyan][{agent.role}][/cyan]"
+                                ctx = self._context_indicator.get_indicator()
+                                self._console.print(f"{agent_badge} {ctx} ", end="")
                             # Stream text content as it arrives
                             self._console.print(block.text, end="")
                             response_text += block.text
