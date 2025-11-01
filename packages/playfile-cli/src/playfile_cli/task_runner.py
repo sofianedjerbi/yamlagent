@@ -119,7 +119,7 @@ class TaskRunner:
 
             # Display step header
             step_info = f"\n[bold cyan]→ Step {i}/{len(task.steps)}:[/bold cyan]"
-            agent_info = f" [bold]{agent.id}[/bold] - {agent.role} ({agent.model})"
+            agent_info = f" {agent.role} ({agent.model})"
             self._console.print(step_info + agent_info)
 
             prompt_preview = base_prompt[:200] + ("..." if len(base_prompt) > 200 else "")
@@ -330,16 +330,32 @@ class TaskRunner:
         Returns:
             Formatted failure message
         """
-        lines = ["## VALIDATION FAILURES - Please fix these issues:\n"]
+        lines = [
+            "## VALIDATION FAILED - FIX THE ISSUES INCREMENTALLY\n",
+            "IMPORTANT: Do NOT reimplement from scratch. The code you just wrote exists.",
+            "Your task is to DEBUG and FIX the specific issues shown below.\n",
+            "Strategy:",
+            "1. Read the error output carefully",
+            "2. Identify the specific failing tests or errors",
+            "3. Make targeted fixes to address those specific issues",
+            "4. DO NOT delete or rewrite working code\n",
+            "---\n"
+        ]
 
         for i, failure in enumerate(failures, 1):
-            lines.append(f"{i}. {failure['description']}")
-            lines.append(f"   Command: {failure['command']}")
+            lines.append(f"Validation Check #{i}: {failure['description']}")
+            lines.append(f"Command: {failure['command']}")
             if failure['output']:
-                lines.append(f"   Output:\n   {failure['output']}\n")
+                # Include more of the output for better context (last 1000 chars)
+                output = failure['output']
+                if len(output) > 1000:
+                    lines.append(f"\nError Output (last 1000 characters):\n{output[-1000:]}\n")
+                else:
+                    lines.append(f"\nError Output:\n{output}\n")
             else:
-                lines.append("")
+                lines.append("No output captured\n")
 
+        lines.append("\nRemember: FIX the issues above. Do not rewrite everything from scratch.")
         return "\n".join(lines)
 
     def _run_command(self, command: str, working_dir: str) -> tuple[bool, str]:
@@ -367,9 +383,17 @@ class TaskRunner:
                 output += "\n" + result.stderr
 
             return (result.returncode == 0, output.strip())
-        except subprocess.TimeoutExpired:
+        except subprocess.TimeoutExpired as e:
+            # Capture partial output before timeout
+            partial_output = ""
+            if e.stdout:
+                partial_output += e.stdout.decode() if isinstance(e.stdout, bytes) else str(e.stdout)
+            if e.stderr:
+                partial_output += "\n" + (e.stderr.decode() if isinstance(e.stderr, bytes) else str(e.stderr))
+
+            timeout_msg = f"Command timeout after 5 minutes.\n\nPartial output before timeout:\n{partial_output}"
             self._console.print("[red]Command timeout (5 minutes)[/red]")
-            return (False, "Command timeout (5 minutes)")
+            return (False, timeout_msg)
         except Exception as e:
             self._console.print(f"[red]Command execution error: {e}[/red]")
             return (False, f"Command execution error: {e}")
