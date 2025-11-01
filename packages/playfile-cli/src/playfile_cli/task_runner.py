@@ -119,7 +119,7 @@ class TaskRunner:
 
             # Display step header
             step_info = f"\n[bold cyan]→ Step {i}/{len(task.steps)}:[/bold cyan]"
-            agent_info = f" {agent.role} ({agent.model})"
+            agent_info = f" [bold]{agent.id}[/bold] - {agent.role} ({agent.model})"
             self._console.print(step_info + agent_info)
 
             prompt_preview = base_prompt[:200] + ("..." if len(base_prompt) > 200 else "")
