@@ -26,17 +26,20 @@ class AgentExecutor:
         self,
         tools: AgentTools | None = None,
         console: Console | None = None,
+        instruction_queue: Any | None = None,
     ) -> None:
         """Initialize executor.
 
         Args:
             tools: Available tools configuration
             console: Rich console for output
+            instruction_queue: Optional queue for user instructions during execution
         """
         self._tools = tools
         self._console = console or Console()
         self._context_indicator = ContextIndicator()
         self._tool_formatter = ToolFormatter(self._console, self._context_indicator)
+        self._instruction_queue = instruction_queue
 
     async def execute(
         self,
@@ -75,6 +78,19 @@ class AgentExecutor:
             last_was_text = False
 
             async for message in client.receive_messages():
+                # Check for user instructions before processing message
+                if self._instruction_queue and self._instruction_queue.has_pending():
+                    instructions = self._instruction_queue.get_all()
+                    for instr in instructions:
+                        instruction_text = (
+                            f"\n## USER INSTRUCTION (injected during execution):\n{instr.text}\n"
+                        )
+                        self._console.print(
+                            f"\n[bold yellow]→ Injecting user instruction[/bold yellow]\n"
+                        )
+                        # Send instruction to agent
+                        await client.query(instruction_text)
+
                 # Handle AssistantMessage with proper type checking
                 if isinstance(message, AssistantMessage):
                     # Update context usage if available

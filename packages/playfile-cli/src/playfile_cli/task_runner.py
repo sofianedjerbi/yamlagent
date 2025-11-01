@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import subprocess
 from typing import Any
 
@@ -13,6 +14,7 @@ from rich.panel import Panel
 
 from playfile_cli.artifacts import ArtifactCollector, StepArtifact
 from playfile_cli.executor import AgentExecutor
+from playfile_cli.instruction_queue import InstructionQueue
 
 
 class TaskRunner:
@@ -27,7 +29,23 @@ class TaskRunner:
         """
         self._config = config
         self._console = console or Console()
-        self._executor = AgentExecutor(config.tools, console)
+
+        # Initialize instruction queue and TUI (only if not in CI mode)
+        self._instruction_queue: InstructionQueue | None = None
+        self._tui_handler: Any = None
+
+        if os.environ.get("CI") != "true":
+            self._instruction_queue = InstructionQueue()
+            # Import here to avoid issues on systems without TTY
+            try:
+                from playfile_cli.tui_input import TUIInputHandler
+
+                self._tui_handler = TUIInputHandler(self._instruction_queue, self._console)
+            except (ImportError, OSError):
+                # TTY not available or import failed
+                pass
+
+        self._executor = AgentExecutor(config.tools, console, self._instruction_queue)
 
     def run(self, task_id: str, inputs: dict[str, Any] | None = None) -> None:
         """Run a workflow task.
@@ -58,22 +76,44 @@ class TaskRunner:
             task: Task to execute
             inputs: Input parameters
         """
-        # Display task header
-        self._console.print()
-        self._console.print(
-            Panel.fit(
-                f"[bold cyan]{task.description}[/bold cyan]\n"
-                f"[dim]Task: {task.id}[/dim]",
-                border_style="cyan",
+        # Start TUI handler if available
+        if self._tui_handler:
+            self._tui_handler.start()
+
+        try:
+            # Display task header
+            self._console.print()
+            self._console.print(
+                Panel.fit(
+                    f"[bold cyan]{task.description}[/bold cyan]\n"
+                    f"[dim]Task: {task.id}[/dim]",
+                    border_style="cyan",
+                )
             )
-        )
 
-        if not task.steps:
-            self._console.print("[yellow]⚠ No steps defined for this task[/yellow]")
-            return
+            if not task.steps:
+                self._console.print("[yellow]⚠ No steps defined for this task[/yellow]")
+                return
 
-        # Initialize artifact collector for this task
-        artifacts = ArtifactCollector()
+            # Initialize artifact collector for this task
+            artifacts = ArtifactCollector()
+            self._run_task_steps(task, inputs, artifacts)
+
+        finally:
+            # Stop TUI handler
+            if self._tui_handler:
+                self._tui_handler.stop()
+
+    def _run_task_steps(
+        self, task: Task, inputs: dict[str, Any], artifacts: ArtifactCollector
+    ) -> None:
+        """Run all steps in a task.
+
+        Args:
+            task: Task to execute
+            inputs: Input parameters
+            artifacts: Artifact collector
+        """
 
         # Execute each step
         for i, step in enumerate(task.steps, 1):
