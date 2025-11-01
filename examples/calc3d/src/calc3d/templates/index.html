@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calc3D - Futuristic 3D Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+
+    <!-- Three.js for 3D rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <!-- 3D Background Canvas -->
+    <canvas id="bg-canvas" class="bg-canvas"></canvas>
+
+    <div class="container">
+        <header>
+            <h1>Calc3D</h1>
+            <p class="subtitle">Futuristic 3D Calculator Experience</p>
+        </header>
+
+        <main>
+            <div class="calculator-wrapper">
+                <div class="calculator" id="calculator">
+                    <!-- Display -->
+                    <div class="display">
+                        <div class="display-expression" id="expression"></div>
+                        <div class="display-text" id="display">0</div>
+                    </div>
+
+                    <!-- Button Grid (4x5 layout) -->
+                    <div class="button-grid" id="button-grid">
+                        <!-- Row 1: AC, +/-, %, ÷ -->
+                        <button class="btn btn-clear" data-action="clearAll" data-type="clear" data-key="Escape">AC</button>
+                        <button class="btn btn-function" data-action="toggleSign" data-type="function" data-key="±">+/-</button>
+                        <button class="btn btn-function" data-action="percentage" data-type="function" data-key="%">%</button>
+                        <button class="btn btn-operator" data-action="divide" data-operation="/" data-type="operator" data-key="/">÷</button>
+
+                        <!-- Row 2: 7, 8, 9, × -->
+                        <button class="btn btn-digit" data-digit="7" data-type="digit" data-key="7">7</button>
+                        <button class="btn btn-digit" data-digit="8" data-type="digit" data-key="8">8</button>
+                        <button class="btn btn-digit" data-digit="9" data-type="digit" data-key="9">9</button>
+                        <button class="btn btn-operator" data-action="multiply" data-operation="*" data-type="operator" data-key="*">×</button>
+
+                        <!-- Row 3: 4, 5, 6, - -->
+                        <button class="btn btn-digit" data-digit="4" data-type="digit" data-key="4">4</button>
+                        <button class="btn btn-digit" data-digit="5" data-type="digit" data-key="5">5</button>
+                        <button class="btn btn-digit" data-digit="6" data-type="digit" data-key="6">6</button>
+                        <button class="btn btn-operator" data-action="subtract" data-operation="-" data-type="operator" data-key="-">-</button>
+
+                        <!-- Row 4: 1, 2, 3, + -->
+                        <button class="btn btn-digit" data-digit="1" data-type="digit" data-key="1">1</button>
+                        <button class="btn btn-digit" data-digit="2" data-type="digit" data-key="2">2</button>
+                        <button class="btn btn-digit" data-digit="3" data-type="digit" data-key="3">3</button>
+                        <button class="btn btn-operator" data-action="add" data-operation="+" data-type="operator" data-key="+">+</button>
+
+                        <!-- Row 5: 0 (span 2), ., = -->
+                        <button class="btn btn-digit btn-zero" data-digit="0" data-type="digit" data-key="0">0</button>
+                        <button class="btn btn-decimal" data-action="decimal" data-type="decimal" data-key=".">.</button>
+                        <button class="btn btn-equals" data-action="equals" data-type="equals" data-key="Enter">=</button>
+                    </div>
+
+                    <!-- Sound Toggle -->
+                    <div class="sound-toggle" id="sound-toggle" title="Toggle sound effects">
+                        <svg class="sound-icon sound-on" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                        </svg>
+                        <svg class="sound-icon sound-off" style="display: none;" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <line x1="23" y1="9" x2="17" y2="15"></line>
+                            <line x1="17" y1="9" x2="23" y2="15"></line>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Built with FastAPI, Python &amp; Three.js | <span class="version">v1.0</span></p>
+        </footer>
+    </div>
+
+    <!-- Load calculator modules -->
+    <script type="module" src="{{ url_for('static', path='/js/calculator.js') }}"></script>
+</body>
+</html>
