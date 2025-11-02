@@ -70,13 +70,23 @@ class Agent:
         If instructions is a file path, reads and returns the file content.
         Otherwise returns the instructions string directly.
 
+        Also prepends common.md if it exists in the same directory as the instructions file.
+
         Returns:
             The instructions content as a string
         """
         instructions_path = self.get_instructions_path()
         if instructions_path:
             # Read from file
-            return instructions_path.read_text(encoding="utf-8")
+            content = instructions_path.read_text(encoding="utf-8")
+
+            # Check for common.md in the same directory
+            common_path = instructions_path.parent / "common.md"
+            if common_path.exists():
+                common_content = common_path.read_text(encoding="utf-8")
+                return f"{common_content}\n\n{content}"
+
+            return content
         # Return inline instructions
         return str(self.instructions)
 

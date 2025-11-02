@@ -138,6 +138,7 @@ class TemplateManager:
         templates.add(".play/agents.yaml", template_content.AGENTS_YAML)
 
         # Agent instruction files
+        templates.add(".play/agents/common.md", template_content.COMMON_INSTRUCTIONS)
         templates.add(".play/agents/coder.md", template_content.CODER_INSTRUCTIONS)
         templates.add(".play/agents/tester.md", template_content.TEST_WRITER_INSTRUCTIONS)
         templates.add(".play/agents/debugger.md", template_content.DEBUGGER_INSTRUCTIONS)
