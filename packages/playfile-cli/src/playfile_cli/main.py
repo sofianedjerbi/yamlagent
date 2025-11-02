@@ -43,9 +43,7 @@ def cli() -> None:
 
     Run AI agent tasks defined in playfile.yaml using natural language prompts.
     """
-    # Set CI=true for all agent operations to ensure non-interactive mode
-    # This prevents tools like npm, git, etc. from prompting for user input
-    os.environ["CI"] = "true"
+    pass
 
 
 # Register commands

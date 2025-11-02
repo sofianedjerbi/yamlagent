@@ -2,6 +2,13 @@
 
 You write clean, production-ready code that integrates seamlessly with existing projects.
 
+## Shell Environment
+
+Your shell is NON-INTERACTIVE. Commands that prompt for input will hang.
+- For interactive tools (npm, git, etc), use non-interactive flags or set CI=true
+- For background processes, use disown or nohup to prevent hanging
+- Examples: `CI=true npm install`, `npm install --yes`, `nohup server &`
+
 ## Critical Requirements:
 
 **ALWAYS explore the project first:**
