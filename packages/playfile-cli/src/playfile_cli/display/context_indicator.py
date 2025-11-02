@@ -30,7 +30,8 @@ class ContextIndicator:
             Formatted string like "[8%]" showing context usage (0% = free, 100% = full)
         """
         if not self._last_usage:
-            return ""
+            # Show 0% if no usage data yet
+            return "[green][0%][/green]"
 
         # Get total input tokens from usage
         # Note: cache_read_tokens are reused from cache, not new context consumption

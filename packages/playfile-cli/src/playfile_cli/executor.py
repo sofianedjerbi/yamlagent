@@ -76,6 +76,7 @@ class AgentExecutor:
             # Stream response with live output following SDK best practices
             response_text = ""
             last_was_text = False
+            badge_shown = False
 
             async for message in client.receive_messages():
                 # Check for user instructions before processing message
@@ -100,8 +101,9 @@ class AgentExecutor:
                     for block in message.content:
                         if isinstance(block, TextBlock):
                             # Show agent badge and context indicator before text
-                            if response_text == "":
-                                # Only show at start of response
+                            if not badge_shown:
+                                badge_shown = True
+                                # Show badge with percentage if available
                                 agent_badge = f"[cyan][{agent.role}][/cyan]"
                                 ctx = self._context_indicator.get_indicator()
                                 # Add space after badge, context indicator already has brackets
