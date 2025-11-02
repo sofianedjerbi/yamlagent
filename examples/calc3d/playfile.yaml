@@ -77,25 +77,35 @@ tasks:
               3. **INTEGRATE IMMEDIATELY** - If you extract utilities, UPDATE all call sites to use them
               4. **VERIFY TESTS PASS** - Run tests after each change to ensure nothing breaks
               5. **DELETE DEAD CODE** - Remove duplicated code after extracting to utilities
+              6. **AVOID OVER-ENGINEERING** - Only extract when there's clear duplication (3+ times)
 
               REFACTORING PROCESS:
               1. Identify code smells (duplication, long functions, tight coupling)
-              2. Extract utilities/helpers if needed
+              2. Extract utilities/helpers ONLY if genuinely needed (3+ duplications)
               3. **IMMEDIATELY update all files that should use the new utilities**
               4. Delete the old duplicated code
               5. Run tests to verify
               6. Repeat until clean
 
               WHAT TO REFACTOR:
-              - Extract repeated code patterns into utilities
+              - Extract ONLY truly repeated code patterns (used 3+ times)
               - Break down long functions (>50 lines)
-              - Apply SOLID principles (SRP, DRY, etc.)
+              - Simplify complex conditionals
               - Improve naming and readability
-              - Add proper type safety
+              - Remove dead code
+
+              REFACTORING PHILOSOPHY:
+              - **Simplicity first**: Don't add layers unless they remove significant duplication
+              - **Inline is fine**: 2 similar code blocks don't need a shared utility
+              - **Measure twice, extract once**: Only create abstractions when pain is real
+              - **Readability > DRY**: Sometimes a bit of duplication is clearer than an abstraction
 
               WHAT NOT TO DO:
               - ❌ Create new files without updating existing code to use them
               - ❌ Leave parallel implementations side-by-side
+              - ❌ Over-abstract (creating utilities for 2 uses, unnecessary layers)
+              - ❌ Add complexity to reduce trivial duplication
+              - ❌ Extract single-use "utilities"
               - ❌ Remove functionality or features
               - ❌ Skip updating imports/call sites
               - ❌ Break existing tests
