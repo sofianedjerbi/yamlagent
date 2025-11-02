@@ -104,7 +104,7 @@ class AgentExecutor:
                                 # Only show at start of response
                                 agent_badge = f"[cyan][{agent.role}][/cyan]"
                                 ctx = self._context_indicator.get_indicator()
-                                self._console.print(f"{agent_badge} {ctx} ", end="")
+                                self._console.print(f"{agent_badge} {ctx}", end="")
                             # Stream text content as it arrives
                             self._console.print(block.text, end="")
                             response_text += block.text
