@@ -81,12 +81,38 @@ tasks:
             prompt: |
               ORIGINAL REQUEST: "{{ inputs.prompt }}"
 
-              Refactor the implementation following SOLID, DRY principles while keeping functionality intact.
+              CRITICAL REFACTORING RULES:
 
-              Ensure the refactored code still implements EVERYTHING from the technical specification.
-              Improve code quality, organization, and maintainability without removing any features.
+              1. **MODIFY EXISTING CODE** - DO NOT create parallel files or duplicate utilities
+              2. **UPDATE IN-PLACE** - Refactor means editing existing files, not creating new ones
+              3. **INTEGRATE IMMEDIATELY** - If you extract utilities, UPDATE all call sites to use them
+              4. **VERIFY TESTS PASS** - Run tests after each change to ensure nothing breaks
+              5. **DELETE DEAD CODE** - Remove duplicated code after extracting to utilities
 
-              The original specification is still your source of truth - nothing should be lost during refactoring.
+              REFACTORING PROCESS:
+              1. Identify code smells (duplication, long functions, tight coupling)
+              2. Extract utilities/helpers if needed
+              3. **IMMEDIATELY update all files that should use the new utilities**
+              4. Delete the old duplicated code
+              5. Run tests to verify
+              6. Repeat until clean
+
+              WHAT TO REFACTOR:
+              - Extract repeated code patterns into utilities
+              - Break down long functions (>50 lines)
+              - Apply SOLID principles (SRP, DRY, etc.)
+              - Improve naming and readability
+              - Add proper type safety
+
+              WHAT NOT TO DO:
+              - ❌ Create new files without updating existing code to use them
+              - ❌ Leave parallel implementations side-by-side
+              - ❌ Remove functionality or features
+              - ❌ Skip updating imports/call sites
+              - ❌ Break existing tests
+
+              The original specification is your source of truth - nothing should be lost during refactoring.
+              All tests must still pass after refactoring.
           context_from:
             - spec            # Original spec for reference
             - implementation  # Current implementation to refactor
