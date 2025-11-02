@@ -282,11 +282,9 @@ async def _setup_project_async(project_dir: Path, instructions: str, console: Co
 
 {instructions}
 
-WORKING DIRECTORY: . (current directory)
+WORKING DIRECTORY: {project_dir}
 
-You will create all files and directories in the current working directory.
-
-CRITICAL: Create a COMPLETE, WORKING project following official conventions.
+CRITICAL: Create files directly in the current directory. Do NOT create a subdirectory for the project.
 
 Requirements:
 - Research the standard project structure for the language/framework
@@ -294,6 +292,7 @@ Requirements:
 - Include all required configuration files (build system, dependencies, etc.)
 - The project MUST build/install successfully after creation
 - Follow official best practices and conventions for the ecosystem
+- Create a COMPLETE, WORKING project following official conventions
 
 Keep it simple, minimal, and production-ready."""
 
