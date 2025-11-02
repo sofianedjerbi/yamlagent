@@ -99,11 +99,16 @@ class AgentExecutor:
 
                     for block in message.content:
                         if isinstance(block, TextBlock):
-                            # Show agent badge before text (no context indicator to save space)
+                            # Show agent badge and context indicator before text
                             if response_text == "":
                                 # Only show at start of response
                                 agent_badge = f"[cyan][{agent.role}][/cyan]"
-                                self._console.print(f"{agent_badge} ", end="")
+                                ctx = self._context_indicator.get_indicator()
+                                # Add space after badge, context indicator already has brackets
+                                if ctx:
+                                    self._console.print(f"{agent_badge} {ctx} ", end="")
+                                else:
+                                    self._console.print(f"{agent_badge} ", end="")
                             # Stream text content as it arrives
                             # Strip leading/trailing whitespace from first block only
                             text = block.text.lstrip() if response_text == "" else block.text
