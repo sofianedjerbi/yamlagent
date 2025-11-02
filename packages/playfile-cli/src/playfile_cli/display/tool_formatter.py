@@ -9,7 +9,6 @@ from typing import Any
 from claude_agent_sdk import ToolResultBlock, ToolUseBlock
 from rich.console import Console
 
-from playfile_cli.display.context_indicator import ContextIndicator
 from playfile_cli.display.diff_formatter import DiffFormatter
 
 
@@ -19,28 +18,14 @@ class ToolFormatter:
     def __init__(
         self,
         console: Console | None = None,
-        context_indicator: ContextIndicator | None = None,
     ) -> None:
         """Initialize formatter.
 
         Args:
             console: Rich console for output
-            context_indicator: Context usage indicator (optional)
         """
         self._console = console or Console()
         self._diff_formatter = DiffFormatter(self._console)
-        self._context_indicator = context_indicator
-
-    def _get_context_prefix(self) -> str:
-        """Get context indicator prefix if available.
-
-        Returns:
-            Context indicator string or empty string
-        """
-        if self._context_indicator:
-            indicator = self._context_indicator.get_indicator()
-            return f"{indicator} " if indicator else ""
-        return ""
 
     def format_tool_id(self, tool_id: str) -> str:
         """Format tool ID for display.
@@ -125,7 +110,7 @@ class ToolFormatter:
 
     def _print_read_tool(self, tool_input: dict[str, Any], tool_id_fmt: str) -> None:
         """Print Read tool usage."""
-        ctx = self._get_context_prefix()
+        
         file_path = tool_input.get("file_path", "")
         offset = tool_input.get("offset")
         limit = tool_input.get("limit")
@@ -134,13 +119,13 @@ class ToolFormatter:
             end = offset + limit if offset and limit else limit or "end"
             range_info = f" [lines {offset or 'start'}-{end}]"
         self._console.print(
-            f"{ctx}[dim][bold]Read:[/bold] [cyan]{file_path}[/cyan]"
+            f"[dim][bold]Read:[/bold] [cyan]{file_path}[/cyan]"
             f"{range_info} {tool_id_fmt}[/dim]",
         )
 
     def _print_write_tool(self, tool_input: dict[str, Any], tool_id_fmt: str) -> None:
         """Print Write tool usage with diff if file exists."""
-        ctx = self._get_context_prefix()
+        
         file_path = tool_input.get("file_path", "")
         new_content = tool_input.get("content", "")
         content_length = len(new_content)
@@ -158,7 +143,7 @@ class ToolFormatter:
                 # Only show diff if content is actually different
                 if old_content != new_content:
                     self._console.print(
-                        f"{ctx}[dim][bold]Write:[/bold] [yellow]{file_path}[/yellow] "
+                        f"[dim][bold]Write:[/bold] [yellow]{file_path}[/yellow] "
                         f"[dim]({old_len}→{content_length} bytes)[/dim] {tool_id_fmt}[/dim]",
                     )
                     # Show diff
@@ -166,19 +151,19 @@ class ToolFormatter:
                 else:
                     # Content is identical - no changes
                     self._console.print(
-                        f"{ctx}[dim][bold]Write:[/bold] [cyan]{file_path}[/cyan] "
+                        f"[dim][bold]Write:[/bold] [cyan]{file_path}[/cyan] "
                         f"[dim](no changes, {content_length} bytes)[/dim] {tool_id_fmt}[/dim]",
                     )
             except Exception as e:
                 # Fallback if can't read file
                 self._console.print(
-                    f"{ctx}[dim][bold]Write:[/bold] [green]{file_path}[/green] "
+                    f"[dim][bold]Write:[/bold] [green]{file_path}[/green] "
                     f"[dim]({content_length} bytes, error reading old: {e})[/dim] {tool_id_fmt}[/dim]",
                 )
         else:
             # New file - show content
             self._console.print(
-                f"{ctx}[dim][bold]Write:[/bold] [green]{file_path}[/green] "
+                f"[dim][bold]Write:[/bold] [green]{file_path}[/green] "
                 f"[dim](new file, {content_length} bytes)[/dim] {tool_id_fmt}[/dim]",
             )
             # Show the content with syntax highlighting
@@ -235,7 +220,7 @@ class ToolFormatter:
 
     def _print_edit_tool(self, tool_input: dict[str, Any], tool_id_fmt: str) -> None:
         """Print Edit tool usage with diff preview."""
-        ctx = self._get_context_prefix()
+        
         file_path = tool_input.get("file_path", "")
         old_string = tool_input.get("old_string", "")
         new_string = tool_input.get("new_string", "")
@@ -247,7 +232,7 @@ class ToolFormatter:
 
         # Show brief header
         self._console.print(
-            f"{ctx}[dim][bold]Edit:[/bold] [yellow]{file_path}[/yellow] [dim]({mode}, {old_len}→{new_len} bytes)[/dim] {tool_id_fmt}[/dim]",
+            f"[dim][bold]Edit:[/bold] [yellow]{file_path}[/yellow] [dim]({mode}, {old_len}→{new_len} bytes)[/dim] {tool_id_fmt}[/dim]",
         )
 
         # Show the diff
@@ -255,27 +240,27 @@ class ToolFormatter:
 
     def _print_glob_tool(self, tool_input: dict[str, Any], tool_id_fmt: str) -> None:
         """Print Glob tool usage."""
-        ctx = self._get_context_prefix()
+        
         pattern = tool_input.get("pattern", "")
         path = tool_input.get("path", ".")
         self._console.print(
-            f"{ctx}[dim][bold]Glob:[/bold] [cyan]{pattern}[/cyan] in {path} {tool_id_fmt}[/dim]",
+            f"[dim][bold]Glob:[/bold] [cyan]{pattern}[/cyan] in {path} {tool_id_fmt}[/dim]",
         )
 
     def _print_grep_tool(self, tool_input: dict[str, Any], tool_id_fmt: str) -> None:
         """Print Grep tool usage."""
-        ctx = self._get_context_prefix()
+        
         pattern = tool_input.get("pattern", "")
         path = tool_input.get("path", ".")
         output_mode = tool_input.get("output_mode", "files_with_matches")
         case_insensitive = " [case-insensitive]" if tool_input.get("-i") else ""
         self._console.print(
-            f"{ctx}[dim][bold]Grep:[/bold] [cyan]'{pattern}'[/cyan] in {path} [dim](mode:{output_mode}{case_insensitive})[/dim] {tool_id_fmt}[/dim]",
+            f"[dim][bold]Grep:[/bold] [cyan]'{pattern}'[/cyan] in {path} [dim](mode:{output_mode}{case_insensitive})[/dim] {tool_id_fmt}[/dim]",
         )
 
     def _print_bash_tool(self, tool_input: dict[str, Any], tool_id_fmt: str) -> None:
         """Print Bash tool usage."""
-        ctx = self._get_context_prefix()
+        
         command = tool_input.get("command", "")
         description = tool_input.get("description", "")
         timeout = tool_input.get("timeout", 120000)
@@ -285,7 +270,7 @@ class ToolFormatter:
         mode = " [background]" if background else ""
         desc = f" - {description}" if description else ""
         self._console.print(
-            f"{ctx}[dim][bold]Bash:[/bold] [magenta]{display_cmd}[/magenta]{mode} [dim](timeout:{timeout / 1000}s)[/dim]{desc} {tool_id_fmt}[/dim]",
+            f"[dim][bold]Bash:[/bold] [magenta]{display_cmd}[/magenta]{mode} [dim](timeout:{timeout / 1000}s)[/dim]{desc} {tool_id_fmt}[/dim]",
         )
 
     def _print_task_tool(self, tool_input: dict[str, Any], tool_id_fmt: str) -> None:
@@ -294,10 +279,10 @@ class ToolFormatter:
         prompt = tool_input.get("prompt", "")
         subagent_type = tool_input.get("subagent_type", "")
 
-        ctx = self._get_context_prefix()
+        
         prompt_preview = prompt[:60] + "..." if len(prompt) > 60 else prompt
         self._console.print(
-            f"{ctx}[dim][bold]Task:[/bold] [blue]{description}[/blue] [dim](agent:{subagent_type})[/dim]\n   [dim italic]Prompt: {prompt_preview}[/dim italic] {tool_id_fmt}[/dim]",
+            f"[dim][bold]Task:[/bold] [blue]{description}[/blue] [dim](agent:{subagent_type})[/dim]\n   [dim italic]Prompt: {prompt_preview}[/dim italic] {tool_id_fmt}[/dim]",
         )
 
     def _print_todo_tool(self, tool_input: dict[str, Any], tool_id_fmt: str) -> None:
@@ -309,11 +294,11 @@ class ToolFormatter:
         pending = sum(1 for t in todos if t.get("status") == "pending")
         in_progress = sum(1 for t in todos if t.get("status") == "in_progress")
         completed = sum(1 for t in todos if t.get("status") == "completed")
-        ctx = self._get_context_prefix()
+        
 
         # Show header with counts
         self._console.print(
-            f"{ctx}[dim][bold]Todos:[/bold] {len(todos)} items [dim](✓{completed} ▶{in_progress} ○{pending})[/dim] {tool_id_fmt}[/dim]",
+            f"[dim][bold]Todos:[/bold] {len(todos)} items [dim](✓{completed} ▶{in_progress} ○{pending})[/dim] {tool_id_fmt}[/dim]",
         )
 
         # Show todo list
@@ -359,18 +344,18 @@ class ToolFormatter:
         cell_id = tool_input.get("cell_id", "")
         edit_mode = tool_input.get("edit_mode", "replace")
         cell_type = tool_input.get("cell_type", "code")
-        ctx = self._get_context_prefix()
+        
         self._console.print(
-            f"{ctx}[dim][bold]Notebook:[/bold] [yellow]{notebook_path}[/yellow] [dim](cell:{cell_id[:8]}, {edit_mode}, {cell_type})[/dim] {tool_id_fmt}[/dim]",
+            f"[dim][bold]Notebook:[/bold] [yellow]{notebook_path}[/yellow] [dim](cell:{cell_id[:8]}, {edit_mode}, {cell_type})[/dim] {tool_id_fmt}[/dim]",
         )
 
     def _print_webfetch_tool(self, tool_input: dict[str, Any], tool_id_fmt: str) -> None:
         """Print WebFetch tool usage."""
         url = tool_input.get("url", "")
         prompt = tool_input.get("prompt", "")[:40]
-        ctx = self._get_context_prefix()
+        
         self._console.print(
-            f"{ctx}[dim][bold]WebFetch:[/bold] [cyan]{url}[/cyan]\n   [dim italic]Query: {prompt}...[/dim italic] {tool_id_fmt}[/dim]",
+            f"[dim][bold]WebFetch:[/bold] [cyan]{url}[/cyan]\n   [dim italic]Query: {prompt}...[/dim italic] {tool_id_fmt}[/dim]",
         )
 
     def _print_websearch_tool(self, tool_input: dict[str, Any], tool_id_fmt: str) -> None:
@@ -383,9 +368,9 @@ class ToolFormatter:
             filters = f" [allow:{','.join(allowed[:2])}]"
         if blocked:
             filters += f" [block:{','.join(blocked[:2])}]"
-        ctx = self._get_context_prefix()
+        
         self._console.print(
-            f"{ctx}[dim][bold]WebSearch:[/bold] [cyan]'{query}'[/cyan]{filters} {tool_id_fmt}[/dim]",
+            f"[dim][bold]WebSearch:[/bold] [cyan]'{query}'[/cyan]{filters} {tool_id_fmt}[/dim]",
         )
 
     def _print_bash_output_tool(self, tool_input: dict[str, Any], tool_id_fmt: str) -> None:
@@ -393,35 +378,35 @@ class ToolFormatter:
         bash_id = tool_input.get("bash_id", "")
         filter_pattern = tool_input.get("filter")
         filter_info = f" [filter:{filter_pattern}]" if filter_pattern else ""
-        ctx = self._get_context_prefix()
+        
         self._console.print(
-            f"{ctx}[dim][bold]BashOutput:[/bold] shell:{bash_id}{filter_info} {tool_id_fmt}[/dim]",
+            f"[dim][bold]BashOutput:[/bold] shell:{bash_id}{filter_info} {tool_id_fmt}[/dim]",
         )
 
     def _print_kill_shell_tool(self, tool_input: dict[str, Any], tool_id_fmt: str) -> None:
         """Print KillShell tool usage."""
         shell_id = tool_input.get("shell_id", "")
-        ctx = self._get_context_prefix()
+        
         self._console.print(
-            f"{ctx}[dim][bold]KillShell:[/bold] shell:{shell_id} {tool_id_fmt}[/dim]",
+            f"[dim][bold]KillShell:[/bold] shell:{shell_id} {tool_id_fmt}[/dim]",
         )
 
     def _print_plan_tool(self, tool_input: dict[str, Any], tool_id_fmt: str) -> None:
         """Print ExitPlanMode tool usage."""
         plan = tool_input.get("plan", "")[:80]
-        ctx = self._get_context_prefix()
+        
         self._console.print(
-            f"{ctx}[dim][bold]Plan:[/bold] {plan}... {tool_id_fmt}[/dim]",
+            f"[dim][bold]Plan:[/bold] {plan}... {tool_id_fmt}[/dim]",
         )
 
     def _print_generic_tool(
         self, tool_name: str, tool_input: dict[str, Any], tool_id_fmt: str
     ) -> None:
         """Print generic tool usage."""
-        ctx = self._get_context_prefix()
+        
         params = ", ".join(f"{k}={str(v)[:20]}" for k, v in tool_input.items() if k and v)
         self._console.print(
-            f"{ctx}[dim][bold]{tool_name}:[/bold] [dim]{params}[/dim] {tool_id_fmt}[/dim]",
+            f"[dim][bold]{tool_name}:[/bold] [dim]{params}[/dim] {tool_id_fmt}[/dim]",
         )
 
     def _get_result_summary(self, content: Any) -> str:

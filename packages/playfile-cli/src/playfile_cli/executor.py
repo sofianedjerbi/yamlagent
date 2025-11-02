@@ -15,7 +15,7 @@ from playfile_core.agents.agent import Agent
 from playfile_core.tools.agent_tools import AgentTools
 from rich.console import Console
 
-from playfile_cli.display import ContextIndicator, ToolFormatter
+from playfile_cli.display import ToolFormatter
 from playfile_cli.sdk_options import SdkOptionsBuilder
 
 
@@ -37,8 +37,7 @@ class AgentExecutor:
         """
         self._tools = tools
         self._console = console or Console()
-        self._context_indicator = ContextIndicator()
-        self._tool_formatter = ToolFormatter(self._console, self._context_indicator)
+        self._tool_formatter = ToolFormatter(self._console)
         self._instruction_queue = instruction_queue
 
     async def execute(
@@ -94,10 +93,6 @@ class AgentExecutor:
 
                 # Handle AssistantMessage with proper type checking
                 if isinstance(message, AssistantMessage):
-                    # Update context usage if available
-                    if hasattr(message, 'usage') and message.usage:
-                        self._context_indicator.update_usage(message.usage)
-
                     for block in message.content:
                         if isinstance(block, TextBlock):
                             # Show agent badge before text
@@ -132,9 +127,6 @@ class AgentExecutor:
 
                 # Check for completion
                 elif isinstance(message, ResultMessage):
-                    # Update context usage from result
-                    if message.usage:
-                        self._context_indicator.update_usage(message.usage)
                     break
 
             # Print newline at the end
