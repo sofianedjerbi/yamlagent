@@ -79,50 +79,17 @@ tasks:
           use: coder
           with:
             prompt: |
-              ORIGINAL REQUEST: "{{ inputs.prompt }}"
+              Refactor the implementation for "{{ inputs.prompt }}"
 
-              CRITICAL REFACTORING RULES:
+              Rules:
+              1. Modify existing files in-place, don't create parallel utilities
+              2. Only extract utilities if code is duplicated 3+ times
+              3. If you extract a utility, immediately update all call sites and delete old code
+              4. Keep it simple - inline duplication is fine for 2 occurrences
+              5. Don't break tests
 
-              1. **MODIFY EXISTING CODE** - DO NOT create parallel files or duplicate utilities
-              2. **UPDATE IN-PLACE** - Refactor means editing existing files, not creating new ones
-              3. **INTEGRATE IMMEDIATELY** - If you extract utilities, UPDATE all call sites to use them
-              4. **VERIFY TESTS PASS** - Run tests after each change to ensure nothing breaks
-              5. **DELETE DEAD CODE** - Remove duplicated code after extracting to utilities
-              6. **AVOID OVER-ENGINEERING** - Only extract when there's clear duplication (3+ times)
-
-              REFACTORING PROCESS:
-              1. Identify code smells (duplication, long functions, tight coupling)
-              2. Extract utilities/helpers ONLY if genuinely needed (3+ duplications)
-              3. **IMMEDIATELY update all files that should use the new utilities**
-              4. Delete the old duplicated code
-              5. Run tests to verify
-              6. Repeat until clean
-
-              WHAT TO REFACTOR:
-              - Extract ONLY truly repeated code patterns (used 3+ times)
-              - Break down long functions (>50 lines)
-              - Simplify complex conditionals
-              - Improve naming and readability
-              - Remove dead code
-
-              REFACTORING PHILOSOPHY:
-              - **Simplicity first**: Don't add layers unless they remove significant duplication
-              - **Inline is fine**: 2 similar code blocks don't need a shared utility
-              - **Measure twice, extract once**: Only create abstractions when pain is real
-              - **Readability > DRY**: Sometimes a bit of duplication is clearer than an abstraction
-
-              WHAT NOT TO DO:
-              - ❌ Create new files without updating existing code to use them
-              - ❌ Leave parallel implementations side-by-side
-              - ❌ Over-abstract (creating utilities for 2 uses, unnecessary layers)
-              - ❌ Add complexity to reduce trivial duplication
-              - ❌ Extract single-use "utilities"
-              - ❌ Remove functionality or features
-              - ❌ Skip updating imports/call sites
-              - ❌ Break existing tests
-
-              The original specification is your source of truth - nothing should be lost during refactoring.
-              All tests must still pass after refactoring.
+              Focus on: breaking down long functions, improving names, removing dead code.
+              Avoid: over-abstraction, unnecessary layers, premature extraction.
           context_from:
             - spec            # Original spec for reference
             - implementation  # Current implementation to refactor
