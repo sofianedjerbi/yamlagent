@@ -106,8 +106,8 @@ class AgentExecutor:
                                 ctx = self._context_indicator.get_indicator()
                                 self._console.print(f"{agent_badge} {ctx} ", end="")
                             # Stream text content as it arrives
-                            # Strip leading newline from first block only
-                            text = block.text.lstrip('\n') if response_text == "" else block.text
+                            # Strip leading/trailing whitespace from first block only
+                            text = block.text.lstrip() if response_text == "" else block.text
                             self._console.print(text, end="")
                             response_text += block.text
                             last_was_text = True
