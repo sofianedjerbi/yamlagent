@@ -103,14 +103,10 @@ class AgentExecutor:
                             # Show agent badge and context indicator before text
                             if not badge_shown:
                                 badge_shown = True
-                                # Show badge with percentage if available
+                                # Show badge on its own line to avoid wrapping issues
                                 agent_badge = f"[cyan][{agent.role}][/cyan]"
                                 ctx = self._context_indicator.get_indicator()
-                                # Add space after badge, context indicator already has brackets
-                                if ctx:
-                                    self._console.print(f"{agent_badge} {ctx} ", end="")
-                                else:
-                                    self._console.print(f"{agent_badge} ", end="")
+                                self._console.print(f"{agent_badge} {ctx}")
                             # Stream text content as it arrives
                             # Strip leading/trailing whitespace from first block only
                             text = block.text.lstrip() if response_text == "" else block.text
