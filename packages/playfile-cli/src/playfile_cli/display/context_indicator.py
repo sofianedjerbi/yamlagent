@@ -54,5 +54,5 @@ class ContextIndicator:
         else:
             color = "red bold"
 
-        # Format: [8%] - percentage of context used
+        # Format: [8%] - percentage of context used (always show even if 0%)
         return f"[{color}][{pct_used:.0f}%][/{color}]"
