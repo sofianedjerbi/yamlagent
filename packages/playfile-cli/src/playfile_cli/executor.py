@@ -104,9 +104,11 @@ class AgentExecutor:
                                 # Only show at start of response
                                 agent_badge = f"[cyan][{agent.role}][/cyan]"
                                 ctx = self._context_indicator.get_indicator()
-                                self._console.print(f"{agent_badge} {ctx}", end="")
+                                self._console.print(f"{agent_badge} {ctx} ", end="")
                             # Stream text content as it arrives
-                            self._console.print(block.text, end="")
+                            # Strip leading newline from first block only
+                            text = block.text.lstrip('\n') if response_text == "" else block.text
+                            self._console.print(text, end="")
                             response_text += block.text
                             last_was_text = True
                         elif isinstance(block, ThinkingBlock):
